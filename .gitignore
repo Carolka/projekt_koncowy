@@ -1,0 +1,20 @@
+# Środowisko i lokalne sekrety
+.venv/
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Edytory i system
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Pliki generowane
+*.log
+staticfiles/
