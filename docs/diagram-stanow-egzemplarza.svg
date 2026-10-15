@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="897" viewBox="0 0 1280 897" role="img" aria-labelledby="title desc">
+<title id="title">Stany egzemplarza</title>
+<desc id="desc">Nazwy opisują sytuację wynikającą z rezerwacji; nie dodajemy pola status w Egzemplarz.</desc>
+<rect width="1280" height="897" fill="#fff"/>
+<defs><marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L9,4 L0,8 Z" fill="#166534"/></marker></defs>
+<style>text{font-family:Arial,sans-serif;fill:#000} .edge{fill:none;stroke:#166534;stroke-width:2;marker-end:url(#arrow)} .label{font-size:14px;paint-order:stroke;stroke:white;stroke-width:6px;stroke-linejoin:round}</style>
+<text x="40" y="45" font-size="26" font-weight="bold">Stany egzemplarza</text>
+<text x="40" y="77" font-size="15">Nazwy opisują sytuację wynikającą z rezerwacji; nie dodajemy pola status w Egzemplarz.</text>
+<polyline class="edge" points="300.0,212 300.0,300"/>
+<text class="label" x="308.0" y="248.0">Rezerwacja</text>
+<polyline class="edge" points="550,341.0 800,341.0"/>
+<text class="label" x="683.0" y="333.0">Bez odbioru</text>
+<polyline class="edge" points="300.0,382 300.0,490"/>
+<text class="label" x="308.0" y="428.0">Odbiór</text>
+<polyline class="edge" points="550,531.0 800,531.0"/>
+<text class="label" x="683.0" y="523.0">Termin minął</text>
+<polyline class="edge" points="300.0,572 300.0,690"/>
+<text class="label" x="308.0" y="623.0">Zwrot</text>
+<polyline class="edge" points="1005.0,572 1005.0,731.0 50,731.0"/>
+<text class="label" x="1013.0" y="643.5">Zwrot</text>
+<rect x="50" y="130" width="500" height="82" rx="7" fill="#f0fdf4" stroke="#166534" stroke-width="2"/>
+<text x="300.0" y="158" font-size="16" font-weight="bold" text-anchor="middle">DOSTĘPNY</text>
+<text x="300.0" y="183" font-size="16" font-weight="normal" text-anchor="middle">dostepny=True</text>
+<rect x="50" y="300" width="500" height="82" rx="7" fill="#f0fdf4" stroke="#166534" stroke-width="2"/>
+<text x="300.0" y="328" font-size="16" font-weight="bold" text-anchor="middle">ZAREZERWOWANY</text>
+<text x="300.0" y="353" font-size="16" font-weight="normal" text-anchor="middle">dostepny=False · 48 h na odbiór</text>
+<rect x="800" y="300" width="410" height="82" rx="7" fill="#f0fdf4" stroke="#166534" stroke-width="2"/>
+<text x="1005.0" y="328" font-size="16" font-weight="bold" text-anchor="middle">Anulowanie lub wygaśnięcie</text>
+<text x="1005.0" y="353" font-size="16" font-weight="normal" text-anchor="middle">Powrót do dostępności</text>
+<rect x="50" y="490" width="500" height="82" rx="7" fill="#f0fdf4" stroke="#166534" stroke-width="2"/>
+<text x="300.0" y="518" font-size="16" font-weight="bold" text-anchor="middle">ODEBRANY</text>
+<text x="300.0" y="543" font-size="16" font-weight="normal" text-anchor="middle">dostepny=False · 14 dni na zwrot</text>
+<rect x="800" y="490" width="410" height="82" rx="7" fill="#f0fdf4" stroke="#166534" stroke-width="2"/>
+<text x="1005.0" y="518" font-size="16" font-weight="bold" text-anchor="middle">PO TERMINIE</text>
+<text x="1005.0" y="543" font-size="16" font-weight="normal" text-anchor="middle">Nadal dostepny=False</text>
+<rect x="50" y="690" width="500" height="82" rx="7" fill="#f0fdf4" stroke="#166534" stroke-width="2"/>
+<text x="300.0" y="718" font-size="16" font-weight="bold" text-anchor="middle">ZWROT POTWIERDZONY</text>
+<text x="300.0" y="743" font-size="16" font-weight="normal" text-anchor="middle">Powrót do dostępności</text>
+<text x="40" y="837" font-size="15" font-weight="normal" text-anchor="start">Pole aktywny jest niezależne od dostępności: wycofanego egzemplarza nie można ponownie zarezerwować.</text>
+</svg>

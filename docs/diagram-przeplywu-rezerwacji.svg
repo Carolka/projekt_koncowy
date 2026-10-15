@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="1157" viewBox="0 0 1280 1157" role="img" aria-labelledby="title desc">
+<title id="title">Przepływ rezerwacji</title>
+<desc id="desc">Od wyboru książki do zwrotu; terminy sprawdzamy ponownie w transakcji.</desc>
+<rect width="1280" height="1157" fill="#fff"/>
+<defs><marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L9,4 L0,8 Z" fill="#166534"/></marker></defs>
+<style>text{font-family:Arial,sans-serif;fill:#000} .edge{fill:none;stroke:#166534;stroke-width:2;marker-end:url(#arrow)} .label{font-size:14px;paint-order:stroke;stroke:white;stroke-width:6px;stroke-linejoin:round}</style>
+<text x="40" y="45" font-size="26" font-weight="bold">Przepływ rezerwacji</text>
+<text x="40" y="77" font-size="15">Od wyboru książki do zwrotu; terminy sprawdzamy ponownie w transakcji.</text>
+<polyline class="edge" points="300.0,177 300.0,240"/>
+<polyline class="edge" points="300.0,297 300.0,360"/>
+<polyline class="edge" points="550,401.0 800,388.5"/>
+<text class="label" x="683.0" y="386.75">Tak</text>
+<polyline class="edge" points="300.0,442 300.0,510"/>
+<text class="label" x="308.0" y="468.0">Nie</text>
+<polyline class="edge" points="550,538.5 800,538.5"/>
+<text class="label" x="683.0" y="530.5">Nie</text>
+<polyline class="edge" points="300.0,567 300.0,640"/>
+<text class="label" x="308.0" y="595.5">Tak</text>
+<polyline class="edge" points="300.0,722 300.0,790"/>
+<text class="label" x="308.0" y="748.0">Odbiór</text>
+<polyline class="edge" points="550,681.0 800,691.0"/>
+<text class="label" x="683.0" y="678.0">Anulowanie</text>
+<polyline class="edge" points="550,710 620,710 620,841 800,841"/>
+<text class="label" x="640" y="826">Brak odbioru</text>
+<polyline class="edge" points="300.0,872 300.0,950"/>
+<text class="label" x="308.0" y="903.0">Zwrot</text>
+<rect x="50" y="120" width="500" height="57" rx="7" fill="#f0fdf4" stroke="#166534" stroke-width="2"/>
+<text x="300.0" y="148" font-size="16" font-weight="bold" text-anchor="middle">Zalogowany użytkownik wybiera książkę</text>
+<rect x="50" y="240" width="500" height="57" rx="7" fill="#f0fdf4" stroke="#166534" stroke-width="2"/>
+<text x="300.0" y="268" font-size="16" font-weight="bold" text-anchor="middle">Wygaszenie starych rezerwacji oczekujących</text>
+<rect x="50" y="360" width="500" height="82" rx="22" fill="#dcfce7" stroke="#166534" stroke-width="2"/>
+<text x="300.0" y="388" font-size="16" font-weight="bold" text-anchor="middle">Czy użytkownik ma już tę książkę</text>
+<text x="300.0" y="413" font-size="16" font-weight="normal" text-anchor="middle">zarezerwowaną lub odebraną?</text>
+<rect x="800" y="360" width="410" height="57" rx="7" fill="#f0fdf4" stroke="#166534" stroke-width="2"/>
+<text x="1005.0" y="388" font-size="16" font-weight="bold" text-anchor="middle">Odmowa kolejnej rezerwacji</text>
+<rect x="50" y="510" width="500" height="57" rx="22" fill="#dcfce7" stroke="#166534" stroke-width="2"/>
+<text x="300.0" y="538" font-size="16" font-weight="bold" text-anchor="middle">Aktywny i dostępny egzemplarz?</text>
+<rect x="800" y="510" width="410" height="57" rx="7" fill="#f0fdf4" stroke="#166534" stroke-width="2"/>
+<text x="1005.0" y="538" font-size="16" font-weight="bold" text-anchor="middle">Brak dostępnych egzemplarzy</text>
+<rect x="50" y="640" width="500" height="82" rx="7" fill="#f0fdf4" stroke="#166534" stroke-width="2"/>
+<text x="300.0" y="668" font-size="16" font-weight="bold" text-anchor="middle">OCZEKUJACA · dostepny=False</text>
+<text x="300.0" y="693" font-size="16" font-weight="normal" text-anchor="middle">Termin odbioru: teraz + 48 godzin</text>
+<rect x="50" y="790" width="500" height="82" rx="7" fill="#f0fdf4" stroke="#166534" stroke-width="2"/>
+<text x="300.0" y="818" font-size="16" font-weight="bold" text-anchor="middle">Potwierdzony odbiór przed terminem</text>
+<text x="300.0" y="843" font-size="16" font-weight="normal" text-anchor="middle">ODEBRANA · zwrot za 14 dni</text>
+<rect x="800" y="650" width="410" height="82" rx="7" fill="#f0fdf4" stroke="#166534" stroke-width="2"/>
+<text x="1005.0" y="678" font-size="16" font-weight="bold" text-anchor="middle">ANULOWANA przed odbiorem</text>
+<text x="1005.0" y="703" font-size="16" font-weight="normal" text-anchor="middle">dostepny=True</text>
+<rect x="800" y="800" width="410" height="82" rx="7" fill="#f0fdf4" stroke="#166534" stroke-width="2"/>
+<text x="1005.0" y="828" font-size="16" font-weight="bold" text-anchor="middle">WYGASLA po 48 godzinach</text>
+<text x="1005.0" y="853" font-size="16" font-weight="normal" text-anchor="middle">dostepny=True</text>
+<rect x="50" y="950" width="500" height="82" rx="7" fill="#f0fdf4" stroke="#166534" stroke-width="2"/>
+<text x="300.0" y="978" font-size="16" font-weight="bold" text-anchor="middle">Bibliotekarka potwierdza zwrot</text>
+<text x="300.0" y="1003" font-size="16" font-weight="normal" text-anchor="middle">ZAKONCZONA · dostepny=True</text>
+<text x="40" y="1097" font-size="15" font-weight="normal" text-anchor="start">Upływ 14 dni po odbiorze nie zwalnia egzemplarza. Historia pozostaje w bazie.</text>
+</svg>

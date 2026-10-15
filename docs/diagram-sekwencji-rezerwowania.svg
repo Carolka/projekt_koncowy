@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1480" viewBox="0 0 1400 1480" role="img" aria-labelledby="title desc">
+<title id="title">Sekwencja rezerwowania książki</title>
+<desc id="desc">Projektowana komunikacja widoku Django, serwisu i PostgreSQL.</desc>
+<rect width="1400" height="1480" fill="#fff"/>
+<defs><marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L9,4 L0,8 Z" fill="#166534"/></marker></defs>
+<style>text{font-family:Arial,sans-serif;fill:#000} .edge{fill:none;stroke:#166534;stroke-width:2;marker-end:url(#arrow)} .label{font-size:14px;paint-order:stroke;stroke:white;stroke-width:6px;stroke-linejoin:round}</style>
+<text x="40" y="45" font-size="26" font-weight="bold">Sekwencja rezerwowania książki</text>
+<text x="40" y="77" font-size="15">Projektowana komunikacja widoku Django, serwisu i PostgreSQL.</text>
+<rect x="15" y="110" width="250" height="57" rx="7" fill="#f0fdf4" stroke="#166534" stroke-width="2"/>
+<text x="140.0" y="138" font-size="16" font-weight="bold" text-anchor="middle">Użytkownik</text>
+<line x1="140" y1="167" x2="140" y2="1370" stroke="#86a892" stroke-dasharray="6 5"/>
+<rect x="365" y="110" width="250" height="57" rx="7" fill="#f0fdf4" stroke="#166534" stroke-width="2"/>
+<text x="490.0" y="138" font-size="16" font-weight="bold" text-anchor="middle">Widok Django</text>
+<line x1="490" y1="167" x2="490" y2="1370" stroke="#86a892" stroke-dasharray="6 5"/>
+<rect x="735" y="110" width="250" height="57" rx="7" fill="#f0fdf4" stroke="#166534" stroke-width="2"/>
+<text x="860.0" y="138" font-size="16" font-weight="bold" text-anchor="middle">Serwis rezerwacji</text>
+<line x1="860" y1="167" x2="860" y2="1370" stroke="#86a892" stroke-dasharray="6 5"/>
+<rect x="1115" y="110" width="250" height="57" rx="7" fill="#f0fdf4" stroke="#166534" stroke-width="2"/>
+<text x="1240.0" y="138" font-size="16" font-weight="bold" text-anchor="middle">PostgreSQL</text>
+<line x1="1240" y1="167" x2="1240" y2="1370" stroke="#86a892" stroke-dasharray="6 5"/>
+<line class="edge" x1="140" y1="230" x2="490" y2="230"/>
+<text x="315.0" y="218" font-size="14" font-weight="normal" text-anchor="middle">POST: rezerwacja książki</text>
+<rect x="365" y="255" width="250" height="57" rx="7" fill="#f0fdf4" stroke="#166534" stroke-width="2"/>
+<text x="490.0" y="283" font-size="16" font-weight="bold" text-anchor="middle">Logowanie i CSRF</text>
+<line class="edge" x1="490" y1="380" x2="860" y2="380"/>
+<text x="675.0" y="368" font-size="14" font-weight="normal" text-anchor="middle">reserve_book(user, book_id)</text>
+<line class="edge" x1="860" y1="460" x2="1240" y2="460"/>
+<text x="1050.0" y="448" font-size="14" font-weight="normal" text-anchor="middle">BEGIN</text>
+<line class="edge" x1="860" y1="535" x2="1240" y2="535"/>
+<text x="1050.0" y="523" font-size="14" font-weight="normal" text-anchor="middle">SELECT FOR UPDATE</text>
+<rect x="1100" y="565" width="275" height="82" rx="7" fill="#f0fdf4" stroke="#166534" stroke-width="2"/>
+<text x="1237.5" y="593" font-size="16" font-weight="bold" text-anchor="middle">Książka, potem egzemplarze</text>
+<text x="1237.5" y="618" font-size="16" font-weight="normal" text-anchor="middle">Blokady według ID</text>
+<line class="edge" x1="860" y1="710" x2="1240" y2="710"/>
+<text x="1050.0" y="698" font-size="14" font-weight="normal" text-anchor="middle">Wygaszenie starych oczekujących</text>
+<line class="edge" x1="860" y1="785" x2="1240" y2="785"/>
+<text x="1050.0" y="773" font-size="14" font-weight="normal" text-anchor="middle">Sprawdzenie duplikatu i dostępności</text>
+<rect x="710" y="820" width="650" height="107" rx="7" fill="#f0fdf4" stroke="#166534" stroke-width="2"/>
+<text x="1035.0" y="848" font-size="16" font-weight="bold" text-anchor="middle">Jeśli rezerwacja możliwa:</text>
+<text x="1035.0" y="873" font-size="16" font-weight="normal" text-anchor="middle">INSERT OCZEKUJACA, termin odbioru +48 h</text>
+<text x="1035.0" y="898" font-size="16" font-weight="normal" text-anchor="middle">UPDATE egzemplarza: dostepny=False</text>
+<line class="edge" x1="860" y1="975" x2="1240" y2="975"/>
+<text x="1050.0" y="963" font-size="14" font-weight="normal" text-anchor="middle">COMMIT — zapis i zwolnienie blokad</text>
+<line class="edge" x1="860" y1="1050" x2="490" y2="1050"/>
+<text x="675.0" y="1038" font-size="14" font-weight="normal" text-anchor="middle">Utworzona rezerwacja</text>
+<line class="edge" x1="490" y1="1125" x2="140" y2="1125"/>
+<text x="315.0" y="1113" font-size="14" font-weight="normal" text-anchor="middle">Przekierowanie do panelu</text>
+<rect x="365" y="1170" width="1000" height="107" rx="7" fill="#f0fdf4" stroke="#166534" stroke-width="2"/>
+<text x="865.0" y="1198" font-size="16" font-weight="bold" text-anchor="middle">Alternatywa: duplikat lub brak dostępnego egzemplarza</text>
+<text x="865.0" y="1223" font-size="16" font-weight="normal" text-anchor="middle">Błąd biznesowy → zakończenie transakcji → komunikat użytkownikowi</text>
+<text x="865.0" y="1248" font-size="16" font-weight="normal" text-anchor="middle">Błąd przerywający transakcję wycofuje wszystkie jej zmiany, także wygaszenie rezerwacji.</text>
+<text x="40" y="1420" font-size="15" font-weight="normal" text-anchor="start">Wszystkie zapisy rezerwacji i zajęcia egzemplarza są atomowe. Szczegóły obsługi odmowy dopracujemy w serwisie.</text>
+</svg>

@@ -1,0 +1,163 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1450" height="1180" viewBox="0 0 1450 1180" role="img" aria-labelledby="title desc">
+<title id="title">Uprawnienia w aplikacji bibliotecznej</title>
+<desc id="desc">Macierz planowanych uprawnień gościa, użytkownika, bibliotekarki i administratora oraz powiązanie uprawnień Django z grupami.</desc>
+<rect width="1450" height="1180" fill="#fff"/>
+<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L9,3 L0,6 Z" fill="#166534"/></marker></defs>
+<style>text{font-family:Arial,sans-serif;fill:#000} .arrow{stroke:#166534;stroke-width:2;fill:none;marker-end:url(#arrow)}</style>
+<text x="35" y="43" font-size="27" font-weight="bold" text-anchor="start">Uprawnienia w aplikacji bibliotecznej</text>
+<text x="35" y="74" font-size="16" font-weight="normal" text-anchor="start">Docelowe reguły dostępu · uprawnienia bibliotekarki przypisuje administrator</text>
+<rect x="35" y="105" width="530" height="48" fill="#dcfce7" stroke="#d1e7d7"/>
+<text x="47" y="135" font-size="16" font-weight="bold" text-anchor="start">Operacja</text>
+<rect x="565" y="105" width="205" height="48" fill="#dcfce7" stroke="#d1e7d7"/>
+<text x="577" y="135" font-size="16" font-weight="bold" text-anchor="start">Gość</text>
+<rect x="770" y="105" width="205" height="48" fill="#dcfce7" stroke="#d1e7d7"/>
+<text x="782" y="135" font-size="16" font-weight="bold" text-anchor="start">Użytkownik</text>
+<rect x="975" y="105" width="205" height="48" fill="#dcfce7" stroke="#d1e7d7"/>
+<text x="987" y="135" font-size="16" font-weight="bold" text-anchor="start">Bibliotekarka¹</text>
+<rect x="1180" y="105" width="235" height="48" fill="#dcfce7" stroke="#d1e7d7"/>
+<text x="1192" y="135" font-size="16" font-weight="bold" text-anchor="start">Administrator²</text>
+<rect x="35" y="153" width="530" height="43" fill="#fff" stroke="#d1e7d7"/>
+<text x="47" y="180" font-size="15" font-weight="normal" text-anchor="start">Katalog, wyszukiwanie i szczegóły</text>
+<rect x="565" y="153" width="205" height="43" fill="#fff" stroke="#d1e7d7"/>
+<text x="577" y="180" font-size="15" font-weight="normal" text-anchor="start">TAK</text>
+<rect x="770" y="153" width="205" height="43" fill="#fff" stroke="#d1e7d7"/>
+<text x="782" y="180" font-size="15" font-weight="normal" text-anchor="start">TAK</text>
+<rect x="975" y="153" width="205" height="43" fill="#fff" stroke="#d1e7d7"/>
+<text x="987" y="180" font-size="15" font-weight="normal" text-anchor="start">TAK</text>
+<rect x="1180" y="153" width="235" height="43" fill="#fff" stroke="#d1e7d7"/>
+<text x="1192" y="180" font-size="15" font-weight="normal" text-anchor="start">TAK</text>
+<rect x="35" y="196" width="530" height="43" fill="#f0f7f2" stroke="#d1e7d7"/>
+<text x="47" y="223" font-size="15" font-weight="normal" text-anchor="start">Samodzielna rejestracja</text>
+<rect x="565" y="196" width="205" height="43" fill="#f0f7f2" stroke="#d1e7d7"/>
+<text x="577" y="223" font-size="15" font-weight="normal" text-anchor="start">TAK</text>
+<rect x="770" y="196" width="205" height="43" fill="#f0f7f2" stroke="#d1e7d7"/>
+<text x="782" y="223" font-size="15" font-weight="normal" text-anchor="start">—</text>
+<rect x="975" y="196" width="205" height="43" fill="#f0f7f2" stroke="#d1e7d7"/>
+<text x="987" y="223" font-size="15" font-weight="normal" text-anchor="start">—</text>
+<rect x="1180" y="196" width="235" height="43" fill="#f0f7f2" stroke="#d1e7d7"/>
+<text x="1192" y="223" font-size="15" font-weight="normal" text-anchor="start">—</text>
+<rect x="35" y="239" width="530" height="43" fill="#fff" stroke="#d1e7d7"/>
+<text x="47" y="266" font-size="15" font-weight="normal" text-anchor="start">Utworzenie rezerwacji książki</text>
+<rect x="565" y="239" width="205" height="43" fill="#fff" stroke="#d1e7d7"/>
+<text x="577" y="266" font-size="15" font-weight="normal" text-anchor="start">NIE</text>
+<rect x="770" y="239" width="205" height="43" fill="#fff" stroke="#d1e7d7"/>
+<text x="782" y="266" font-size="15" font-weight="normal" text-anchor="start">TAK</text>
+<rect x="975" y="239" width="205" height="43" fill="#fff" stroke="#d1e7d7"/>
+<text x="987" y="266" font-size="15" font-weight="normal" text-anchor="start">TAK</text>
+<rect x="1180" y="239" width="235" height="43" fill="#fff" stroke="#d1e7d7"/>
+<text x="1192" y="266" font-size="15" font-weight="normal" text-anchor="start">TAK</text>
+<rect x="35" y="282" width="530" height="43" fill="#f0f7f2" stroke="#d1e7d7"/>
+<text x="47" y="309" font-size="15" font-weight="normal" text-anchor="start">Własny panel i historia</text>
+<rect x="565" y="282" width="205" height="43" fill="#f0f7f2" stroke="#d1e7d7"/>
+<text x="577" y="309" font-size="15" font-weight="normal" text-anchor="start">NIE</text>
+<rect x="770" y="282" width="205" height="43" fill="#f0f7f2" stroke="#d1e7d7"/>
+<text x="782" y="309" font-size="15" font-weight="normal" text-anchor="start">Własne dane</text>
+<rect x="975" y="282" width="205" height="43" fill="#f0f7f2" stroke="#d1e7d7"/>
+<text x="987" y="309" font-size="15" font-weight="normal" text-anchor="start">Własne dane</text>
+<rect x="1180" y="282" width="235" height="43" fill="#f0f7f2" stroke="#d1e7d7"/>
+<text x="1192" y="309" font-size="15" font-weight="normal" text-anchor="start">Własne dane</text>
+<rect x="35" y="325" width="530" height="43" fill="#fff" stroke="#d1e7d7"/>
+<text x="47" y="352" font-size="15" font-weight="normal" text-anchor="start">Anulowanie własnej oczekującej rezerwacji</text>
+<rect x="565" y="325" width="205" height="43" fill="#fff" stroke="#d1e7d7"/>
+<text x="577" y="352" font-size="15" font-weight="normal" text-anchor="start">NIE</text>
+<rect x="770" y="325" width="205" height="43" fill="#fff" stroke="#d1e7d7"/>
+<text x="782" y="352" font-size="15" font-weight="normal" text-anchor="start">TAK</text>
+<rect x="975" y="325" width="205" height="43" fill="#fff" stroke="#d1e7d7"/>
+<text x="987" y="352" font-size="15" font-weight="normal" text-anchor="start">TAK</text>
+<rect x="1180" y="325" width="235" height="43" fill="#fff" stroke="#d1e7d7"/>
+<text x="1192" y="352" font-size="15" font-weight="normal" text-anchor="start">TAK</text>
+<rect x="35" y="368" width="530" height="43" fill="#f0f7f2" stroke="#d1e7d7"/>
+<text x="47" y="395" font-size="15" font-weight="normal" text-anchor="start">Podgląd wszystkich rezerwacji</text>
+<rect x="565" y="368" width="205" height="43" fill="#f0f7f2" stroke="#d1e7d7"/>
+<text x="577" y="395" font-size="15" font-weight="normal" text-anchor="start">NIE</text>
+<rect x="770" y="368" width="205" height="43" fill="#f0f7f2" stroke="#d1e7d7"/>
+<text x="782" y="395" font-size="15" font-weight="normal" text-anchor="start">NIE</text>
+<rect x="975" y="368" width="205" height="43" fill="#f0f7f2" stroke="#d1e7d7"/>
+<text x="987" y="395" font-size="15" font-weight="normal" text-anchor="start">TAK</text>
+<rect x="1180" y="368" width="235" height="43" fill="#f0f7f2" stroke="#d1e7d7"/>
+<text x="1192" y="395" font-size="15" font-weight="normal" text-anchor="start">TAK</text>
+<rect x="35" y="411" width="530" height="43" fill="#fff" stroke="#d1e7d7"/>
+<text x="47" y="438" font-size="15" font-weight="normal" text-anchor="start">Anulowanie cudzej oczekującej rezerwacji</text>
+<rect x="565" y="411" width="205" height="43" fill="#fff" stroke="#d1e7d7"/>
+<text x="577" y="438" font-size="15" font-weight="normal" text-anchor="start">NIE</text>
+<rect x="770" y="411" width="205" height="43" fill="#fff" stroke="#d1e7d7"/>
+<text x="782" y="438" font-size="15" font-weight="normal" text-anchor="start">NIE</text>
+<rect x="975" y="411" width="205" height="43" fill="#fff" stroke="#d1e7d7"/>
+<text x="987" y="438" font-size="15" font-weight="normal" text-anchor="start">Uprawnienie</text>
+<rect x="1180" y="411" width="235" height="43" fill="#fff" stroke="#d1e7d7"/>
+<text x="1192" y="438" font-size="15" font-weight="normal" text-anchor="start">TAK</text>
+<rect x="35" y="454" width="530" height="43" fill="#f0f7f2" stroke="#d1e7d7"/>
+<text x="47" y="481" font-size="15" font-weight="normal" text-anchor="start">Potwierdzenie odbioru przed upływem 48 h</text>
+<rect x="565" y="454" width="205" height="43" fill="#f0f7f2" stroke="#d1e7d7"/>
+<text x="577" y="481" font-size="15" font-weight="normal" text-anchor="start">NIE</text>
+<rect x="770" y="454" width="205" height="43" fill="#f0f7f2" stroke="#d1e7d7"/>
+<text x="782" y="481" font-size="15" font-weight="normal" text-anchor="start">NIE</text>
+<rect x="975" y="454" width="205" height="43" fill="#f0f7f2" stroke="#d1e7d7"/>
+<text x="987" y="481" font-size="15" font-weight="normal" text-anchor="start">Uprawnienie</text>
+<rect x="1180" y="454" width="235" height="43" fill="#f0f7f2" stroke="#d1e7d7"/>
+<text x="1192" y="481" font-size="15" font-weight="normal" text-anchor="start">TAK</text>
+<rect x="35" y="497" width="530" height="43" fill="#fff" stroke="#d1e7d7"/>
+<text x="47" y="524" font-size="15" font-weight="normal" text-anchor="start">Potwierdzenie zwrotu książki</text>
+<rect x="565" y="497" width="205" height="43" fill="#fff" stroke="#d1e7d7"/>
+<text x="577" y="524" font-size="15" font-weight="normal" text-anchor="start">NIE</text>
+<rect x="770" y="497" width="205" height="43" fill="#fff" stroke="#d1e7d7"/>
+<text x="782" y="524" font-size="15" font-weight="normal" text-anchor="start">NIE</text>
+<rect x="975" y="497" width="205" height="43" fill="#fff" stroke="#d1e7d7"/>
+<text x="987" y="524" font-size="15" font-weight="normal" text-anchor="start">Uprawnienie</text>
+<rect x="1180" y="497" width="235" height="43" fill="#fff" stroke="#d1e7d7"/>
+<text x="1192" y="524" font-size="15" font-weight="normal" text-anchor="start">TAK</text>
+<rect x="35" y="540" width="530" height="43" fill="#f0f7f2" stroke="#d1e7d7"/>
+<text x="47" y="567" font-size="15" font-weight="normal" text-anchor="start">Edycja katalogu przez Django admin</text>
+<rect x="565" y="540" width="205" height="43" fill="#f0f7f2" stroke="#d1e7d7"/>
+<text x="577" y="567" font-size="15" font-weight="normal" text-anchor="start">NIE</text>
+<rect x="770" y="540" width="205" height="43" fill="#f0f7f2" stroke="#d1e7d7"/>
+<text x="782" y="567" font-size="15" font-weight="normal" text-anchor="start">NIE</text>
+<rect x="975" y="540" width="205" height="43" fill="#f0f7f2" stroke="#d1e7d7"/>
+<text x="987" y="567" font-size="15" font-weight="normal" text-anchor="start">Uprawnienia</text>
+<rect x="1180" y="540" width="235" height="43" fill="#f0f7f2" stroke="#d1e7d7"/>
+<text x="1192" y="567" font-size="15" font-weight="normal" text-anchor="start">TAK</text>
+<rect x="35" y="583" width="530" height="43" fill="#fff" stroke="#d1e7d7"/>
+<text x="47" y="610" font-size="15" font-weight="normal" text-anchor="start">Tworzenie kont, grup i nadawanie uprawnień</text>
+<rect x="565" y="583" width="205" height="43" fill="#fff" stroke="#d1e7d7"/>
+<text x="577" y="610" font-size="15" font-weight="normal" text-anchor="start">NIE</text>
+<rect x="770" y="583" width="205" height="43" fill="#fff" stroke="#d1e7d7"/>
+<text x="782" y="610" font-size="15" font-weight="normal" text-anchor="start">NIE</text>
+<rect x="975" y="583" width="205" height="43" fill="#fff" stroke="#d1e7d7"/>
+<text x="987" y="610" font-size="15" font-weight="normal" text-anchor="start">NIE</text>
+<rect x="1180" y="583" width="235" height="43" fill="#fff" stroke="#d1e7d7"/>
+<text x="1192" y="610" font-size="15" font-weight="normal" text-anchor="start">TAK</text>
+<rect x="35" y="626" width="530" height="43" fill="#f0f7f2" stroke="#d1e7d7"/>
+<text x="47" y="653" font-size="15" font-weight="normal" text-anchor="start">Anulowanie rezerwacji po odbiorze</text>
+<rect x="565" y="626" width="205" height="43" fill="#f0f7f2" stroke="#d1e7d7"/>
+<text x="577" y="653" font-size="15" font-weight="normal" text-anchor="start">NIE</text>
+<rect x="770" y="626" width="205" height="43" fill="#f0f7f2" stroke="#d1e7d7"/>
+<text x="782" y="653" font-size="15" font-weight="normal" text-anchor="start">NIE</text>
+<rect x="975" y="626" width="205" height="43" fill="#f0f7f2" stroke="#d1e7d7"/>
+<text x="987" y="653" font-size="15" font-weight="normal" text-anchor="start">NIE</text>
+<rect x="1180" y="626" width="235" height="43" fill="#f0f7f2" stroke="#d1e7d7"/>
+<text x="1192" y="653" font-size="15" font-weight="normal" text-anchor="start">NIE³</text>
+<text x="35" y="707" font-size="16" font-weight="normal" text-anchor="start">¹ Bibliotekarka: aktywne konto, grupa Bibliotekarki; Django admin wymaga dodatkowo is_staff=True.</text>
+<text x="35" y="735" font-size="16" font-weight="normal" text-anchor="start">² Administrator: aktywny superuser.  ³ Reguły biznesowe nadal obowiązują w serwisach aplikacji.</text>
+<rect x="35" y="780" width="355" height="92" rx="8" fill="#f0fdf4" stroke="#3f7050"/>
+<text x="212.5" y="806" font-size="16" font-weight="bold" text-anchor="middle">Użytkownik Django</text>
+<text x="212.5" y="829" font-size="16" font-weight="normal" text-anchor="middle">Członkostwo w grupach</text>
+<text x="212.5" y="852" font-size="16" font-weight="normal" text-anchor="middle">Opcjonalnie uprawnienia bezpośrednie</text>
+<rect x="530" y="780" width="355" height="92" rx="8" fill="#f0fdf4" stroke="#3f7050"/>
+<text x="707.5" y="806" font-size="16" font-weight="bold" text-anchor="middle">Grupa Bibliotekarki</text>
+<text x="707.5" y="829" font-size="16" font-weight="normal" text-anchor="middle">Zestaw uprawnień katalogu</text>
+<text x="707.5" y="852" font-size="16" font-weight="normal" text-anchor="middle">Podgląd i operacje rezerwacji</text>
+<rect x="1025" y="780" width="390" height="92" rx="8" fill="#f0fdf4" stroke="#3f7050"/>
+<text x="1220.0" y="806" font-size="16" font-weight="bold" text-anchor="middle">Kontrola operacji</text>
+<text x="1220.0" y="829" font-size="16" font-weight="normal" text-anchor="middle">Widok sprawdza dostęp</text>
+<text x="1220.0" y="852" font-size="16" font-weight="normal" text-anchor="middle">Serwis sprawdza uprawnienia i stan</text>
+<line class="arrow" x1="390" y1="826" x2="530" y2="826"/>
+<line class="arrow" x1="885" y1="826" x2="1025" y2="826"/>
+<text x="35" y="920" font-size="19" font-weight="bold" text-anchor="start">Uprawnienia rezerwacji</text>
+<text x="35" y="953" font-size="16" font-weight="normal" text-anchor="start">reservations.view_rezerwacja — podgląd wszystkich rezerwacji</text>
+<text x="35" y="981" font-size="16" font-weight="normal" text-anchor="start">reservations.cancel_reservation — anulowanie cudzych rezerwacji oczekujących</text>
+<text x="35" y="1009" font-size="16" font-weight="normal" text-anchor="start">reservations.collect_reservation — potwierdzanie odbioru</text>
+<text x="35" y="1037" font-size="16" font-weight="normal" text-anchor="start">reservations.return_reservation — potwierdzanie zwrotu</text>
+<text x="35" y="1080" font-size="16" font-weight="normal" text-anchor="start">Przydział egzemplarza, zmiana statusu i dostępności odbywają się przez serwisy, a nie ręczną edycję.</text>
+<text x="35" y="1110" font-size="16" font-weight="normal" text-anchor="start">Rezerwacje w adminie: odczyt i dozwolone akcje; bez formularza ręcznego tworzenia lub usuwania.</text>
+<text x="35" y="1140" font-size="16" font-weight="normal" text-anchor="start">Każda operacja zmieniająca dane: POST i CSRF. Brak uprawnienia lub niedozwolony stan oznacza odmowę.</text>
+</svg>

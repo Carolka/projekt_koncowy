@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="1042" viewBox="0 0 1280 1042" role="img" aria-labelledby="title desc">
+<title id="title">Stany rezerwacji</title>
+<desc id="desc">Statusy zapisujemy w Rezerwacja.status. Zmiany dostępności są częścią tej samej transakcji.</desc>
+<rect width="1280" height="1042" fill="#fff"/>
+<defs><marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L9,4 L0,8 Z" fill="#166534"/></marker></defs>
+<style>text{font-family:Arial,sans-serif;fill:#000} .edge{fill:none;stroke:#166534;stroke-width:2;marker-end:url(#arrow)} .label{font-size:14px;paint-order:stroke;stroke:white;stroke-width:6px;stroke-linejoin:round}</style>
+<text x="40" y="45" font-size="26" font-weight="bold">Stany rezerwacji</text>
+<text x="40" y="77" font-size="15">Statusy zapisujemy w Rezerwacja.status. Zmiany dostępności są częścią tej samej transakcji.</text>
+<polyline class="edge" points="300.0,177 300.0,250"/>
+<polyline class="edge" points="550,291.0 800,303.5"/>
+<text class="label" x="683.0" y="289.25">Anulowanie</text>
+<polyline class="edge" points="550,320 620,320 620,460 800,460"/>
+<text class="label" x="640" y="446">Brak odbioru</text>
+<polyline class="edge" points="300.0,332 300.0,490"/>
+<text class="label" x="308.0" y="403.0">Odbiór przed terminem</text>
+<polyline class="edge" points="550,570 690,570 690,703 800,703"/>
+<text class="label" x="710" y="687">14 dni minęło</text>
+<polyline class="edge" points="300.0,597 300.0,810"/>
+<text class="label" x="308.0" y="695.5">Zwrot</text>
+<polyline class="edge" points="1005,757 1005,863.5 550,863.5"/>
+<text class="label" x="1013.0" y="802.25">Zwrot</text>
+<rect x="50" y="120" width="500" height="57" rx="7" fill="#f0fdf4" stroke="#166534" stroke-width="2"/>
+<text x="300.0" y="148" font-size="16" font-weight="bold" text-anchor="middle">UTWORZENIE REZERWACJI</text>
+<rect x="50" y="250" width="500" height="82" rx="7" fill="#f0fdf4" stroke="#166534" stroke-width="2"/>
+<text x="300.0" y="278" font-size="16" font-weight="bold" text-anchor="middle">OCZEKUJACA</text>
+<text x="300.0" y="303" font-size="16" font-weight="normal" text-anchor="middle">dostepny=False · 48 h na odbiór</text>
+<rect x="800" y="250" width="410" height="107" rx="7" fill="#f0fdf4" stroke="#166534" stroke-width="2"/>
+<text x="1005.0" y="278" font-size="16" font-weight="bold" text-anchor="middle">ANULOWANA</text>
+<text x="1005.0" y="303" font-size="16" font-weight="normal" text-anchor="middle">Anulowanie przed terminem</text>
+<text x="1005.0" y="328" font-size="16" font-weight="normal" text-anchor="middle">dostepny=True</text>
+<rect x="800" y="440" width="410" height="107" rx="7" fill="#f0fdf4" stroke="#166534" stroke-width="2"/>
+<text x="1005.0" y="468" font-size="16" font-weight="bold" text-anchor="middle">WYGASLA</text>
+<text x="1005.0" y="493" font-size="16" font-weight="normal" text-anchor="middle">Upływ 48 h bez odbioru</text>
+<text x="1005.0" y="518" font-size="16" font-weight="normal" text-anchor="middle">dostepny=True</text>
+<rect x="50" y="490" width="500" height="107" rx="7" fill="#f0fdf4" stroke="#166534" stroke-width="2"/>
+<text x="300.0" y="518" font-size="16" font-weight="bold" text-anchor="middle">ODEBRANA</text>
+<text x="300.0" y="543" font-size="16" font-weight="normal" text-anchor="middle">dostepny=False</text>
+<text x="300.0" y="568" font-size="16" font-weight="normal" text-anchor="middle">14 dni na zwrot od odbioru</text>
+<rect x="800" y="650" width="410" height="107" rx="7" fill="#f0fdf4" stroke="#166534" stroke-width="2"/>
+<text x="1005.0" y="678" font-size="16" font-weight="bold" text-anchor="middle">Termin zwrotu przekroczony</text>
+<text x="1005.0" y="703" font-size="16" font-weight="normal" text-anchor="middle">Status nadal ODEBRANA</text>
+<text x="1005.0" y="728" font-size="16" font-weight="normal" text-anchor="middle">dostepny=False</text>
+<rect x="50" y="810" width="500" height="107" rx="7" fill="#f0fdf4" stroke="#166534" stroke-width="2"/>
+<text x="300.0" y="838" font-size="16" font-weight="bold" text-anchor="middle">ZAKONCZONA</text>
+<text x="300.0" y="863" font-size="16" font-weight="normal" text-anchor="middle">Potwierdzenie zwrotu</text>
+<text x="300.0" y="888" font-size="16" font-weight="normal" text-anchor="middle">dostepny=True</text>
+<text x="40" y="982" font-size="15" font-weight="normal" text-anchor="start">Brak przejścia ODEBRANA → ANULOWANA. Anulowane, wygasłe i zakończone rezerwacje pozostają widoczne w historii.</text>
+</svg>

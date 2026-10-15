@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="1097" viewBox="0 0 1280 1097" role="img" aria-labelledby="title desc">
+<title id="title">Przepływ pracy bibliotekarki</title>
+<desc id="desc">Dostęp i każda operacja wymagają odpowiednich uprawnień.</desc>
+<rect width="1280" height="1097" fill="#fff"/>
+<defs><marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L9,4 L0,8 Z" fill="#166534"/></marker></defs>
+<style>text{font-family:Arial,sans-serif;fill:#000} .edge{fill:none;stroke:#166534;stroke-width:2;marker-end:url(#arrow)} .label{font-size:14px;paint-order:stroke;stroke:white;stroke-width:6px;stroke-linejoin:round}</style>
+<text x="40" y="45" font-size="26" font-weight="bold">Przepływ pracy bibliotekarki</text>
+<text x="40" y="77" font-size="15">Dostęp i każda operacja wymagają odpowiednich uprawnień.</text>
+<polyline class="edge" points="300.0,177 300.0,250"/>
+<polyline class="edge" points="550,278.5 800,291.0"/>
+<text class="label" x="683.0" y="276.75">Katalog</text>
+<polyline class="edge" points="300.0,307 300.0,400"/>
+<text class="label" x="308.0" y="345.5">Rezerwacje</text>
+<polyline class="edge" points="550,441.0 800,441.0"/>
+<text class="label" x="683.0" y="433.0">Zamknięte</text>
+<polyline class="edge" points="300.0,482 300.0,550"/>
+<text class="label" x="308.0" y="508.0">Oczekujące</text>
+<polyline class="edge" points="550,591.0 800,591.0"/>
+<text class="label" x="683.0" y="583.0">48 h minęło</text>
+<polyline class="edge" points="300.0,632 300.0,720"/>
+<text class="label" x="308.0" y="668.0">Odbiór</text>
+<polyline class="edge" points="550,620 620,620 620,761 800,761"/>
+<text class="label" x="640" y="745">Anulowanie</text>
+<polyline class="edge" points="300.0,802 300.0,890"/>
+<text class="label" x="308.0" y="838.0">Zwrot</text>
+<rect x="50" y="120" width="500" height="57" rx="7" fill="#f0fdf4" stroke="#166534" stroke-width="2"/>
+<text x="300.0" y="148" font-size="16" font-weight="bold" text-anchor="middle">Logowanie i kontrola uprawnień</text>
+<rect x="50" y="250" width="500" height="57" rx="7" fill="#f0fdf4" stroke="#166534" stroke-width="2"/>
+<text x="300.0" y="278" font-size="16" font-weight="bold" text-anchor="middle">Panel bibliotekarki</text>
+<rect x="800" y="250" width="410" height="82" rx="7" fill="#f0fdf4" stroke="#166534" stroke-width="2"/>
+<text x="1005.0" y="278" font-size="16" font-weight="bold" text-anchor="middle">Django admin</text>
+<text x="1005.0" y="303" font-size="16" font-weight="normal" text-anchor="middle">Katalog i egzemplarze</text>
+<rect x="50" y="400" width="500" height="82" rx="7" fill="#f0fdf4" stroke="#166534" stroke-width="2"/>
+<text x="300.0" y="428" font-size="16" font-weight="bold" text-anchor="middle">Lista rezerwacji</text>
+<text x="300.0" y="453" font-size="16" font-weight="normal" text-anchor="middle">Wyszukiwanie i filtry</text>
+<rect x="50" y="550" width="500" height="82" rx="7" fill="#f0fdf4" stroke="#166534" stroke-width="2"/>
+<text x="300.0" y="578" font-size="16" font-weight="bold" text-anchor="middle">OCZEKUJACA</text>
+<text x="300.0" y="603" font-size="16" font-weight="normal" text-anchor="middle">Sprawdzenie terminu odbioru</text>
+<rect x="800" y="400" width="410" height="82" rx="7" fill="#f0fdf4" stroke="#166534" stroke-width="2"/>
+<text x="1005.0" y="428" font-size="16" font-weight="bold" text-anchor="middle">Historia: ANULOWANA</text>
+<text x="1005.0" y="453" font-size="16" font-weight="normal" text-anchor="middle">WYGASLA / ZAKONCZONA</text>
+<rect x="800" y="550" width="410" height="82" rx="7" fill="#f0fdf4" stroke="#166534" stroke-width="2"/>
+<text x="1005.0" y="578" font-size="16" font-weight="bold" text-anchor="middle">Termin odbioru minął</text>
+<text x="1005.0" y="603" font-size="16" font-weight="normal" text-anchor="middle">System wygasza rezerwację</text>
+<rect x="50" y="720" width="500" height="82" rx="7" fill="#f0fdf4" stroke="#166534" stroke-width="2"/>
+<text x="300.0" y="748" font-size="16" font-weight="bold" text-anchor="middle">Odbiór przed terminem</text>
+<text x="300.0" y="773" font-size="16" font-weight="normal" text-anchor="middle">ODEBRANA · 14 dni na zwrot</text>
+<rect x="800" y="720" width="410" height="82" rx="7" fill="#f0fdf4" stroke="#166534" stroke-width="2"/>
+<text x="1005.0" y="748" font-size="16" font-weight="bold" text-anchor="middle">Anulowanie przed odbiorem</text>
+<text x="1005.0" y="773" font-size="16" font-weight="normal" text-anchor="middle">ANULOWANA · zwolnienie egzemplarza</text>
+<rect x="50" y="890" width="500" height="82" rx="7" fill="#f0fdf4" stroke="#166534" stroke-width="2"/>
+<text x="300.0" y="918" font-size="16" font-weight="bold" text-anchor="middle">Potwierdzenie faktycznego zwrotu</text>
+<text x="300.0" y="943" font-size="16" font-weight="normal" text-anchor="middle">ZAKONCZONA · zwolnienie egzemplarza</text>
+<text x="40" y="1037" font-size="15" font-weight="normal" text-anchor="start">Odebraną rezerwację można również wybrać bezpośrednio z listy. Po terminie książka pozostaje zajęta.</text>
+</svg>

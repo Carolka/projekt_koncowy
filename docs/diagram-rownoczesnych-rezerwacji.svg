@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1320" height="1190" viewBox="0 0 1320 1190" role="img" aria-labelledby="title desc">
+<title id="title">Równoczesne rezerwacje ostatniego egzemplarza</title>
+<desc id="desc">Projektowany przebieg dwóch transakcji PostgreSQL. Pierwsza blokuje książkę, druga czeka i po zatwierdzeniu pierwszej otrzymuje informację o braku dostępnego egzemplarza.</desc>
+<rect width="1320" height="1190" fill="#fff"/>
+<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L9,3 L0,6 Z" fill="#166534"/></marker></defs>
+<style>text{font-family:Arial,sans-serif;fill:#000} .arrow{stroke:#166534;stroke-width:2;fill:none;marker-end:url(#arrow)}</style>
+<text x="40" y="44" font-size="27" font-weight="bold" text-anchor="start">Równoczesne rezerwacje ostatniego egzemplarza</text>
+<text x="40" y="75" font-size="16" font-weight="normal" text-anchor="start">Dwie zalogowane osoby · różni użytkownicy · jedna książka · jeden wolny egzemplarz</text>
+<rect x="40" y="105" width="340" height="48" rx="8" fill="#f0fdf4" stroke="#3f7050"/>
+<text x="210.0" y="131" font-size="16" font-weight="bold" text-anchor="middle">Użytkownik A / transakcja A</text>
+<rect x="490" y="105" width="340" height="48" rx="8" fill="#f0fdf4" stroke="#3f7050"/>
+<text x="660.0" y="131" font-size="16" font-weight="bold" text-anchor="middle">PostgreSQL</text>
+<rect x="940" y="105" width="340" height="48" rx="8" fill="#f0fdf4" stroke="#3f7050"/>
+<text x="1110.0" y="131" font-size="16" font-weight="bold" text-anchor="middle">Użytkownik B / transakcja B</text>
+<line x1="210" y1="153" x2="210" y2="1030" stroke="#86a892" stroke-dasharray="6 5"/>
+<line x1="660" y1="153" x2="660" y2="1030" stroke="#86a892" stroke-dasharray="6 5"/>
+<line x1="1110" y1="153" x2="1110" y2="1030" stroke="#86a892" stroke-dasharray="6 5"/>
+<line class="arrow" x1="210" y1="210" x2="660" y2="210"/>
+<text x="435.0" y="198" font-size="14" font-weight="normal" text-anchor="middle">BEGIN; SELECT książki FOR UPDATE</text>
+<rect x="490" y="230" width="340" height="70" rx="8" fill="#f0fdf4" stroke="#3f7050"/>
+<text x="660.0" y="256" font-size="16" font-weight="bold" text-anchor="middle">A uzyskuje blokadę książki</text>
+<text x="660.0" y="279" font-size="16" font-weight="normal" text-anchor="middle">Blokuje egzemplarze według ID</text>
+<line class="arrow" x1="1110" y1="345" x2="660" y2="345"/>
+<text x="885.0" y="333" font-size="14" font-weight="normal" text-anchor="middle">BEGIN; SELECT tej książki FOR UPDATE</text>
+<rect x="940" y="365" width="340" height="70" rx="8" fill="#f0fdf4" stroke="#3f7050"/>
+<text x="1110.0" y="391" font-size="16" font-weight="bold" text-anchor="middle">B CZEKA na blokadę</text>
+<text x="1110.0" y="414" font-size="16" font-weight="normal" text-anchor="middle">Transakcja A nadal ją utrzymuje</text>
+<rect x="40" y="390" width="340" height="116" rx="8" fill="#f0fdf4" stroke="#3f7050"/>
+<text x="210.0" y="416" font-size="16" font-weight="bold" text-anchor="middle">A sprawdza dane po blokadzie</text>
+<text x="210.0" y="439" font-size="16" font-weight="normal" text-anchor="middle">Wygasza stare oczekujące</text>
+<text x="210.0" y="462" font-size="16" font-weight="normal" text-anchor="middle">Brak duplikatu użytkownika</text>
+<text x="210.0" y="485" font-size="16" font-weight="normal" text-anchor="middle">Egzemplarz jest dostępny</text>
+<line class="arrow" x1="210" y1="560" x2="660" y2="560"/>
+<text x="435.0" y="548" font-size="14" font-weight="normal" text-anchor="middle">INSERT rezerwacji OCZEKUJACA</text>
+<line class="arrow" x1="210" y1="615" x2="660" y2="615"/>
+<text x="435.0" y="603" font-size="14" font-weight="normal" text-anchor="middle">UPDATE egzemplarza: dostepny=False</text>
+<line class="arrow" x1="210" y1="670" x2="660" y2="670"/>
+<text x="435.0" y="658" font-size="14" font-weight="normal" text-anchor="middle">COMMIT — zapis i zwolnienie blokad</text>
+<rect x="40" y="690" width="340" height="70" rx="8" fill="#dcfce7" stroke="#3f7050"/>
+<text x="210.0" y="716" font-size="16" font-weight="bold" text-anchor="middle">SUKCES użytkownika A</text>
+<text x="210.0" y="739" font-size="16" font-weight="normal" text-anchor="middle">48 godzin na odbiór</text>
+<line class="arrow" x1="660" y1="805" x2="1110" y2="805"/>
+<text x="885.0" y="793" font-size="14" font-weight="normal" text-anchor="middle">B uzyskuje blokadę po COMMIT A</text>
+<rect x="940" y="830" width="340" height="116" rx="8" fill="#f0fdf4" stroke="#3f7050"/>
+<text x="1110.0" y="856" font-size="16" font-weight="bold" text-anchor="middle">B ponownie sprawdza dostępność</text>
+<text x="1110.0" y="879" font-size="16" font-weight="normal" text-anchor="middle">Widoczna rezerwacja A</text>
+<text x="1110.0" y="902" font-size="16" font-weight="normal" text-anchor="middle">Egzemplarz jest zajęty</text>
+<text x="1110.0" y="925" font-size="16" font-weight="normal" text-anchor="middle">Brak drugiego wolnego egzemplarza</text>
+<rect x="940" y="970" width="340" height="70" rx="8" fill="#f0fdf4" stroke="#3f7050"/>
+<text x="1110.0" y="996" font-size="16" font-weight="bold" text-anchor="middle">ODMOWA użytkownika B</text>
+<text x="1110.0" y="1019" font-size="16" font-weight="normal" text-anchor="middle">Brak dostępnych egzemplarzy</text>
+<text x="40" y="1080" font-size="19" font-weight="bold" text-anchor="start">Wynik: dokładnie jedna bieżąca rezerwacja i dostepny=False.</text>
+<text x="40" y="1112" font-size="16" font-weight="normal" text-anchor="start">Blokady obejmują całą transakcję. Ograniczenie UNIQUE dla statusów OCZEKUJACA / ODEBRANA</text>
+<text x="40" y="1137" font-size="16" font-weight="normal" text-anchor="start">dodatkowo chroni egzemplarz. Po wycofaniu A użytkownik B może zarezerwować nadal wolny egzemplarz.</text>
+<text x="40" y="1164" font-size="14" font-weight="normal" text-anchor="start">Diagram przedstawia projektowaną logikę serwisu, nie wynik uruchomionego testu współbieżności.</text>
+</svg>

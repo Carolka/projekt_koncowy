@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1220" height="1290" viewBox="0 0 1220 1290" role="img" aria-labelledby="title desc">
+<title id="title">Diagram bazy danych biblioteki</title>
+<desc id="desc">Modele użytkownika, autora, gatunku, książki, egzemplarza i rezerwacji. Czarny tekst na jasnym tle.</desc>
+<rect width="1220" height="1290" fill="white"/>
+<style>text{font-family:Arial,sans-serif;fill:#000} .field{font-size:15px}.label{font-size:15px;font-weight:bold;paint-order:stroke;stroke:white;stroke-width:6px;stroke-linejoin:round}.edge{fill:none;stroke:#166534;stroke-width:2}</style>
+<polyline class="edge" points="340,125 430,125"/>
+<text class="label" x="385" y="112" text-anchor="middle">N : M</text>
+<polyline class="edge" points="770,125 870,125"/>
+<text class="label" x="820" y="112" text-anchor="middle">M : N</text>
+<polyline class="edge" points="600,254 600,390"/>
+<text class="label" x="600" y="327" text-anchor="middle">1 : N</text>
+<polyline class="edge" points="600,604 600,675 940,675 940,740"/>
+<text class="label" x="835" y="663" text-anchor="middle">1 : N — historia egzemplarza</text>
+<polyline class="edge" points="380,860 710,860"/>
+<text class="label" x="545" y="846" text-anchor="middle">1 : N — rezerwacje użytkownika</text>
+<rect x="40" y="40" width="300" height="146" fill="white" stroke="#166534" stroke-width="2"/>
+<rect x="41" y="41" width="298" height="42" fill="#d1e7d7"/>
+<text x="190.0" y="68" text-anchor="middle" font-size="17" font-weight="bold">AUTOR</text>
+<rect x="41" y="84" width="298" height="34" fill="#ffffff"/>
+<text class="field" x="52" y="107">id : bigint [PK]</text>
+<rect x="41" y="118" width="298" height="34" fill="#f0f7f2"/>
+<text class="field" x="52" y="141">imie : varchar(100)</text>
+<rect x="41" y="152" width="298" height="34" fill="#ffffff"/>
+<text class="field" x="52" y="175">nazwisko : varchar(150)</text>
+<rect x="430" y="40" width="340" height="214" fill="white" stroke="#166534" stroke-width="2"/>
+<rect x="431" y="41" width="338" height="42" fill="#d1e7d7"/>
+<text x="600.0" y="68" text-anchor="middle" font-size="17" font-weight="bold">KSIAZKA</text>
+<rect x="431" y="84" width="338" height="34" fill="#ffffff"/>
+<text class="field" x="442" y="107">id : bigint [PK]</text>
+<rect x="431" y="118" width="338" height="34" fill="#f0f7f2"/>
+<text class="field" x="442" y="141">tytul : varchar(255)</text>
+<rect x="431" y="152" width="338" height="34" fill="#ffffff"/>
+<text class="field" x="442" y="175">opis : text</text>
+<rect x="431" y="186" width="338" height="34" fill="#f0f7f2"/>
+<text class="field" x="442" y="209">isbn : varchar(13) [UK, NULL]</text>
+<rect x="431" y="220" width="338" height="34" fill="#ffffff"/>
+<text class="field" x="442" y="243">rok_wydania : smallint [NULL]</text>
+<rect x="870" y="40" width="300" height="112" fill="white" stroke="#166534" stroke-width="2"/>
+<rect x="871" y="41" width="298" height="42" fill="#d1e7d7"/>
+<text x="1020.0" y="68" text-anchor="middle" font-size="17" font-weight="bold">GATUNEK</text>
+<rect x="871" y="84" width="298" height="34" fill="#ffffff"/>
+<text class="field" x="882" y="107">id : bigint [PK]</text>
+<rect x="871" y="118" width="298" height="34" fill="#f0f7f2"/>
+<text class="field" x="882" y="141">nazwa : varchar(100) [UK]</text>
+<rect x="430" y="390" width="340" height="214" fill="white" stroke="#166534" stroke-width="2"/>
+<rect x="431" y="391" width="338" height="42" fill="#d1e7d7"/>
+<text x="600.0" y="418" text-anchor="middle" font-size="17" font-weight="bold">EGZEMPLARZ</text>
+<rect x="431" y="434" width="338" height="34" fill="#ffffff"/>
+<text class="field" x="442" y="457">id : bigint [PK]</text>
+<rect x="431" y="468" width="338" height="34" fill="#f0f7f2"/>
+<text class="field" x="442" y="491">ksiazka_id : bigint [FK]</text>
+<rect x="431" y="502" width="338" height="34" fill="#ffffff"/>
+<text class="field" x="442" y="525">numer_inwentarzowy : varchar(50) [UK]</text>
+<rect x="431" y="536" width="338" height="34" fill="#f0f7f2"/>
+<text class="field" x="442" y="559">aktywny : boolean</text>
+<rect x="431" y="570" width="338" height="34" fill="#ffffff"/>
+<text class="field" x="442" y="593">dostepny : boolean</text>
+<rect x="40" y="740" width="340" height="248" fill="white" stroke="#166534" stroke-width="2"/>
+<rect x="41" y="741" width="338" height="42" fill="#d1e7d7"/>
+<text x="210.0" y="768" text-anchor="middle" font-size="17" font-weight="bold">USER (django.contrib.auth)</text>
+<rect x="41" y="784" width="338" height="34" fill="#ffffff"/>
+<text class="field" x="52" y="807">id : integer [PK]</text>
+<rect x="41" y="818" width="338" height="34" fill="#f0f7f2"/>
+<text class="field" x="52" y="841">username : varchar(150) [UK]</text>
+<rect x="41" y="852" width="338" height="34" fill="#ffffff"/>
+<text class="field" x="52" y="875">password : varchar(128), hash</text>
+<rect x="41" y="886" width="338" height="34" fill="#f0f7f2"/>
+<text class="field" x="52" y="909">is_active : boolean</text>
+<rect x="41" y="920" width="338" height="34" fill="#ffffff"/>
+<text class="field" x="52" y="943">is_staff : boolean</text>
+<rect x="41" y="954" width="338" height="34" fill="#f0f7f2"/>
+<text class="field" x="52" y="977">is_superuser : boolean</text>
+<rect x="710" y="740" width="460" height="384" fill="white" stroke="#166534" stroke-width="2"/>
+<rect x="711" y="741" width="458" height="42" fill="#d1e7d7"/>
+<text x="940.0" y="768" text-anchor="middle" font-size="17" font-weight="bold">REZERWACJA</text>
+<rect x="711" y="784" width="458" height="34" fill="#ffffff"/>
+<text class="field" x="722" y="807">id : bigint [PK]</text>
+<rect x="711" y="818" width="458" height="34" fill="#f0f7f2"/>
+<text class="field" x="722" y="841">uzytkownik_id : integer [FK]</text>
+<rect x="711" y="852" width="458" height="34" fill="#ffffff"/>
+<text class="field" x="722" y="875">egzemplarz_id : bigint [FK]</text>
+<rect x="711" y="886" width="458" height="34" fill="#f0f7f2"/>
+<text class="field" x="722" y="909">status : varchar(20)</text>
+<rect x="711" y="920" width="458" height="34" fill="#ffffff"/>
+<text class="field" x="722" y="943">utworzona_at : datetime</text>
+<rect x="711" y="954" width="458" height="34" fill="#f0f7f2"/>
+<text class="field" x="722" y="977">termin_odbioru : datetime</text>
+<rect x="711" y="988" width="458" height="34" fill="#ffffff"/>
+<text class="field" x="722" y="1011">odebrana_at : datetime [NULL]</text>
+<rect x="711" y="1022" width="458" height="34" fill="#f0f7f2"/>
+<text class="field" x="722" y="1045">termin_zwrotu : datetime [NULL]</text>
+<rect x="711" y="1056" width="458" height="34" fill="#ffffff"/>
+<text class="field" x="722" y="1079">anulowana_at : datetime [NULL]</text>
+<rect x="711" y="1090" width="458" height="34" fill="#f0f7f2"/>
+<text class="field" x="722" y="1113">zwrocona_at : datetime [NULL]</text>
+<text x="40" y="1170" font-size="16" font-weight="bold">PK — klucz główny · FK — klucz obcy · UK — unikalność · NULL — pole opcjonalne</text>
+<text x="40" y="1200" font-size="15">Relacje N:M realizują automatyczne tabele pośrednie Django (niepokazane).</text>
+<text x="40" y="1226" font-size="15">Egzemplarz: najwyżej jedna rezerwacja OCZEKUJACA lub ODEBRANA jednocześnie.</text>
+<text x="40" y="1252" font-size="15">USER: pokazano wybrane pola; bibliotekarka to użytkownik z grupą i uprawnieniami.</text>
+</svg>

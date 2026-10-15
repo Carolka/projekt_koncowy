@@ -1,0 +1,275 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1640" height="1610" viewBox="0 0 1640 1610" role="img" aria-labelledby="title desc">
+<title id="title">Biblioteka — fizyczny diagram bazy PostgreSQL</title>
+<desc id="desc">Tabele katalogu, rezerwacji, użytkowników i relacji wiele do wielu. Czarne litery na jasnym tle. Na podstawie migracji aplikacji.</desc>
+<rect width="1640" height="1610" fill="#ffffff"/>
+<style>text{font-family:Arial,sans-serif;fill:#000000} .edge{fill:none;stroke:#166534;stroke-width:2} .label{font-size:15px;paint-order:stroke;stroke:#fff;stroke-width:7px;stroke-linejoin:round}</style>
+<text x="40" y="42" font-size="27" font-weight="bold">Biblioteka — fizyczny diagram bazy danych</text>
+<text x="40" y="70" font-size="15">PostgreSQL · nazwy tabel i kolumn Django · migracje 0001_initial</text>
+<polyline class="edge" points="480,175 620,175"/>
+<text class="label" x="550" y="161" text-anchor="middle">1 : N</text>
+<polyline class="edge" points="1140,175 1260,175 1260,470"/>
+<text class="label" x="1210" y="161" text-anchor="middle">N : 1</text>
+<polyline class="edge" points="480,415 620,415"/>
+<text class="label" x="550" y="401" text-anchor="middle">1 : N</text>
+<polyline class="edge" points="1140,415 1200,415 1200,500 1260,500"/>
+<text class="label" x="1200" y="453" text-anchor="middle">N : 1</text>
+<polyline class="edge" points="1430,722 1430,785 880,785 880,820"/>
+<text class="label" x="1210" y="773" text-anchor="middle">1 : N</text>
+<polyline class="edge" points="880,1042 880,1110"/>
+<text class="label" x="880" y="1082" text-anchor="middle">1 : N</text>
+<polyline class="edge" points="540,1210 620,1210"/>
+<text class="label" x="580" y="1197" text-anchor="middle">1 : N</text>
+<rect x="40" y="110" width="440" height="162" fill="#fff" stroke="#166534" stroke-width="2"/>
+<rect x="41" y="111" width="438" height="40" fill="#dcfce7"/>
+<text x="54" y="137" font-size="18" font-weight="bold">catalog_autor</text>
+<rect x="41" y="151" width="438" height="30" fill="#e0eee4"/>
+<text x="52" y="172" font-size="13" font-weight="bold">Kolumna</text>
+<text x="260.0" y="172" font-size="13" font-weight="bold">Typ PostgreSQL</text>
+<text x="395" y="172" font-size="13" font-weight="bold">Klucze</text>
+<rect x="41" y="182" width="438" height="30" fill="#ffffff"/>
+<text x="52" y="202" font-size="14">id</text>
+<text x="260.0" y="202" font-size="14">bigint</text>
+<text x="395" y="202" font-size="14">PK</text>
+<rect x="41" y="212" width="438" height="30" fill="#f0f7f2"/>
+<text x="52" y="232" font-size="14">imie</text>
+<text x="260.0" y="232" font-size="14">varchar(100)</text>
+<text x="395" y="232" font-size="14"></text>
+<rect x="41" y="242" width="438" height="30" fill="#ffffff"/>
+<text x="52" y="262" font-size="14">nazwisko</text>
+<text x="260.0" y="262" font-size="14">varchar(150)</text>
+<text x="395" y="262" font-size="14"></text>
+<rect x="620" y="110" width="520" height="196" fill="#fff" stroke="#166534" stroke-width="2"/>
+<rect x="621" y="111" width="518" height="40" fill="#dcfce7"/>
+<text x="634" y="137" font-size="18" font-weight="bold">catalog_ksiazka_autorzy</text>
+<rect x="621" y="151" width="518" height="30" fill="#e0eee4"/>
+<text x="632" y="172" font-size="13" font-weight="bold">Kolumna</text>
+<text x="880.0" y="172" font-size="13" font-weight="bold">Typ PostgreSQL</text>
+<text x="1055" y="172" font-size="13" font-weight="bold">Klucze</text>
+<rect x="621" y="182" width="518" height="30" fill="#ffffff"/>
+<text x="632" y="202" font-size="14">id</text>
+<text x="880.0" y="202" font-size="14">bigint</text>
+<text x="1055" y="202" font-size="14">PK</text>
+<rect x="621" y="212" width="518" height="30" fill="#f0f7f2"/>
+<text x="632" y="232" font-size="14">ksiazka_id</text>
+<text x="880.0" y="232" font-size="14">bigint</text>
+<text x="1055" y="232" font-size="14">FK</text>
+<rect x="621" y="242" width="518" height="30" fill="#ffffff"/>
+<text x="632" y="262" font-size="14">autor_id</text>
+<text x="880.0" y="262" font-size="14">bigint</text>
+<text x="1055" y="262" font-size="14">FK</text>
+<text x="632" y="294" font-size="12">UNIQUE (ksiazka_id, autor_id)</text>
+<rect x="40" y="350" width="440" height="132" fill="#fff" stroke="#166534" stroke-width="2"/>
+<rect x="41" y="351" width="438" height="40" fill="#dcfce7"/>
+<text x="54" y="377" font-size="18" font-weight="bold">catalog_gatunek</text>
+<rect x="41" y="391" width="438" height="30" fill="#e0eee4"/>
+<text x="52" y="412" font-size="13" font-weight="bold">Kolumna</text>
+<text x="260.0" y="412" font-size="13" font-weight="bold">Typ PostgreSQL</text>
+<text x="395" y="412" font-size="13" font-weight="bold">Klucze</text>
+<rect x="41" y="422" width="438" height="30" fill="#ffffff"/>
+<text x="52" y="442" font-size="14">id</text>
+<text x="260.0" y="442" font-size="14">bigint</text>
+<text x="395" y="442" font-size="14">PK</text>
+<rect x="41" y="452" width="438" height="30" fill="#f0f7f2"/>
+<text x="52" y="472" font-size="14">nazwa</text>
+<text x="260.0" y="472" font-size="14">varchar(100)</text>
+<text x="395" y="472" font-size="14">UK</text>
+<rect x="620" y="350" width="520" height="196" fill="#fff" stroke="#166534" stroke-width="2"/>
+<rect x="621" y="351" width="518" height="40" fill="#dcfce7"/>
+<text x="634" y="377" font-size="18" font-weight="bold">catalog_ksiazka_gatunki</text>
+<rect x="621" y="391" width="518" height="30" fill="#e0eee4"/>
+<text x="632" y="412" font-size="13" font-weight="bold">Kolumna</text>
+<text x="880.0" y="412" font-size="13" font-weight="bold">Typ PostgreSQL</text>
+<text x="1055" y="412" font-size="13" font-weight="bold">Klucze</text>
+<rect x="621" y="422" width="518" height="30" fill="#ffffff"/>
+<text x="632" y="442" font-size="14">id</text>
+<text x="880.0" y="442" font-size="14">bigint</text>
+<text x="1055" y="442" font-size="14">PK</text>
+<rect x="621" y="452" width="518" height="30" fill="#f0f7f2"/>
+<text x="632" y="472" font-size="14">ksiazka_id</text>
+<text x="880.0" y="472" font-size="14">bigint</text>
+<text x="1055" y="472" font-size="14">FK</text>
+<rect x="621" y="482" width="518" height="30" fill="#ffffff"/>
+<text x="632" y="502" font-size="14">gatunek_id</text>
+<text x="880.0" y="502" font-size="14">bigint</text>
+<text x="1055" y="502" font-size="14">FK</text>
+<text x="632" y="534" font-size="12">UNIQUE (ksiazka_id, gatunek_id)</text>
+<rect x="1260" y="470" width="340" height="256" fill="#fff" stroke="#166534" stroke-width="2"/>
+<rect x="1261" y="471" width="338" height="40" fill="#dcfce7"/>
+<text x="1274" y="497" font-size="18" font-weight="bold">catalog_ksiazka</text>
+<rect x="1261" y="511" width="338" height="30" fill="#e0eee4"/>
+<text x="1272" y="532" font-size="13" font-weight="bold">Kolumna</text>
+<text x="1430.0" y="532" font-size="13" font-weight="bold">Typ PostgreSQL</text>
+<text x="1515" y="532" font-size="13" font-weight="bold">Klucze</text>
+<rect x="1261" y="542" width="338" height="30" fill="#ffffff"/>
+<text x="1272" y="562" font-size="14">id</text>
+<text x="1430.0" y="562" font-size="14">bigint</text>
+<text x="1515" y="562" font-size="14">PK</text>
+<rect x="1261" y="572" width="338" height="30" fill="#f0f7f2"/>
+<text x="1272" y="592" font-size="14">tytul</text>
+<text x="1430.0" y="592" font-size="14">varchar(255)</text>
+<text x="1515" y="592" font-size="14"></text>
+<rect x="1261" y="602" width="338" height="30" fill="#ffffff"/>
+<text x="1272" y="622" font-size="14">opis</text>
+<text x="1430.0" y="622" font-size="14">text</text>
+<text x="1515" y="622" font-size="14"></text>
+<rect x="1261" y="632" width="338" height="30" fill="#f0f7f2"/>
+<text x="1272" y="652" font-size="14">isbn</text>
+<text x="1430.0" y="652" font-size="14">varchar(13) ?</text>
+<text x="1515" y="652" font-size="14">UK</text>
+<rect x="1261" y="662" width="338" height="30" fill="#ffffff"/>
+<text x="1272" y="682" font-size="14">rok_wydania</text>
+<text x="1430.0" y="682" font-size="14">smallint ?</text>
+<text x="1515" y="682" font-size="14"></text>
+<text x="1272" y="714" font-size="12">CHECK (rok_wydania &gt;= 0)</text>
+<rect x="620" y="820" width="520" height="222" fill="#fff" stroke="#166534" stroke-width="2"/>
+<rect x="621" y="821" width="518" height="40" fill="#dcfce7"/>
+<text x="634" y="847" font-size="18" font-weight="bold">catalog_egzemplarz</text>
+<rect x="621" y="861" width="518" height="30" fill="#e0eee4"/>
+<text x="632" y="882" font-size="13" font-weight="bold">Kolumna</text>
+<text x="880.0" y="882" font-size="13" font-weight="bold">Typ PostgreSQL</text>
+<text x="1055" y="882" font-size="13" font-weight="bold">Klucze</text>
+<rect x="621" y="892" width="518" height="30" fill="#ffffff"/>
+<text x="632" y="912" font-size="14">id</text>
+<text x="880.0" y="912" font-size="14">bigint</text>
+<text x="1055" y="912" font-size="14">PK</text>
+<rect x="621" y="922" width="518" height="30" fill="#f0f7f2"/>
+<text x="632" y="942" font-size="14">ksiazka_id</text>
+<text x="880.0" y="942" font-size="14">bigint</text>
+<text x="1055" y="942" font-size="14">FK</text>
+<rect x="621" y="952" width="518" height="30" fill="#ffffff"/>
+<text x="632" y="972" font-size="14">numer_inwentarzowy</text>
+<text x="880.0" y="972" font-size="14">varchar(50)</text>
+<text x="1055" y="972" font-size="14">UK</text>
+<rect x="621" y="982" width="518" height="30" fill="#f0f7f2"/>
+<text x="632" y="1002" font-size="14">aktywny</text>
+<text x="880.0" y="1002" font-size="14">boolean</text>
+<text x="1055" y="1002" font-size="14"></text>
+<rect x="621" y="1012" width="518" height="30" fill="#ffffff"/>
+<text x="632" y="1032" font-size="14">dostepny</text>
+<text x="880.0" y="1032" font-size="14">boolean</text>
+<text x="1055" y="1032" font-size="14"></text>
+<rect x="40" y="1110" width="500" height="402" fill="#fff" stroke="#166534" stroke-width="2"/>
+<rect x="41" y="1111" width="498" height="40" fill="#dcfce7"/>
+<text x="54" y="1137" font-size="18" font-weight="bold">auth_user</text>
+<rect x="41" y="1151" width="498" height="30" fill="#e0eee4"/>
+<text x="52" y="1172" font-size="13" font-weight="bold">Kolumna</text>
+<text x="290.0" y="1172" font-size="13" font-weight="bold">Typ PostgreSQL</text>
+<text x="455" y="1172" font-size="13" font-weight="bold">Klucze</text>
+<rect x="41" y="1182" width="498" height="30" fill="#ffffff"/>
+<text x="52" y="1202" font-size="14">id</text>
+<text x="290.0" y="1202" font-size="14">integer</text>
+<text x="455" y="1202" font-size="14">PK</text>
+<rect x="41" y="1212" width="498" height="30" fill="#f0f7f2"/>
+<text x="52" y="1232" font-size="14">username</text>
+<text x="290.0" y="1232" font-size="14">varchar(150)</text>
+<text x="455" y="1232" font-size="14">UK</text>
+<rect x="41" y="1242" width="498" height="30" fill="#ffffff"/>
+<text x="52" y="1262" font-size="14">password</text>
+<text x="290.0" y="1262" font-size="14">varchar(128)</text>
+<text x="455" y="1262" font-size="14"></text>
+<rect x="41" y="1272" width="498" height="30" fill="#f0f7f2"/>
+<text x="52" y="1292" font-size="14">first_name</text>
+<text x="290.0" y="1292" font-size="14">varchar(150)</text>
+<text x="455" y="1292" font-size="14"></text>
+<rect x="41" y="1302" width="498" height="30" fill="#ffffff"/>
+<text x="52" y="1322" font-size="14">last_name</text>
+<text x="290.0" y="1322" font-size="14">varchar(150)</text>
+<text x="455" y="1322" font-size="14"></text>
+<rect x="41" y="1332" width="498" height="30" fill="#f0f7f2"/>
+<text x="52" y="1352" font-size="14">email</text>
+<text x="290.0" y="1352" font-size="14">varchar(254)</text>
+<text x="455" y="1352" font-size="14"></text>
+<rect x="41" y="1362" width="498" height="30" fill="#ffffff"/>
+<text x="52" y="1382" font-size="14">is_active</text>
+<text x="290.0" y="1382" font-size="14">boolean</text>
+<text x="455" y="1382" font-size="14"></text>
+<rect x="41" y="1392" width="498" height="30" fill="#f0f7f2"/>
+<text x="52" y="1412" font-size="14">is_staff</text>
+<text x="290.0" y="1412" font-size="14">boolean</text>
+<text x="455" y="1412" font-size="14"></text>
+<rect x="41" y="1422" width="498" height="30" fill="#ffffff"/>
+<text x="52" y="1442" font-size="14">is_superuser</text>
+<text x="290.0" y="1442" font-size="14">boolean</text>
+<text x="455" y="1442" font-size="14"></text>
+<rect x="41" y="1452" width="498" height="30" fill="#f0f7f2"/>
+<text x="52" y="1472" font-size="14">last_login</text>
+<text x="290.0" y="1472" font-size="14">timestamptz ?</text>
+<text x="455" y="1472" font-size="14"></text>
+<rect x="41" y="1482" width="498" height="30" fill="#ffffff"/>
+<text x="52" y="1502" font-size="14">date_joined</text>
+<text x="290.0" y="1502" font-size="14">timestamptz</text>
+<text x="455" y="1502" font-size="14"></text>
+<rect x="620" y="1110" width="520" height="372" fill="#fff" stroke="#166534" stroke-width="2"/>
+<rect x="621" y="1111" width="518" height="40" fill="#dcfce7"/>
+<text x="634" y="1137" font-size="18" font-weight="bold">reservations_rezerwacja</text>
+<rect x="621" y="1151" width="518" height="30" fill="#e0eee4"/>
+<text x="632" y="1172" font-size="13" font-weight="bold">Kolumna</text>
+<text x="880.0" y="1172" font-size="13" font-weight="bold">Typ PostgreSQL</text>
+<text x="1055" y="1172" font-size="13" font-weight="bold">Klucze</text>
+<rect x="621" y="1182" width="518" height="30" fill="#ffffff"/>
+<text x="632" y="1202" font-size="14">id</text>
+<text x="880.0" y="1202" font-size="14">bigint</text>
+<text x="1055" y="1202" font-size="14">PK</text>
+<rect x="621" y="1212" width="518" height="30" fill="#f0f7f2"/>
+<text x="632" y="1232" font-size="14">uzytkownik_id</text>
+<text x="880.0" y="1232" font-size="14">integer</text>
+<text x="1055" y="1232" font-size="14">FK</text>
+<rect x="621" y="1242" width="518" height="30" fill="#ffffff"/>
+<text x="632" y="1262" font-size="14">egzemplarz_id</text>
+<text x="880.0" y="1262" font-size="14">bigint</text>
+<text x="1055" y="1262" font-size="14">FK</text>
+<rect x="621" y="1272" width="518" height="30" fill="#f0f7f2"/>
+<text x="632" y="1292" font-size="14">status</text>
+<text x="880.0" y="1292" font-size="14">varchar(20)</text>
+<text x="1055" y="1292" font-size="14"></text>
+<rect x="621" y="1302" width="518" height="30" fill="#ffffff"/>
+<text x="632" y="1322" font-size="14">utworzona_at</text>
+<text x="880.0" y="1322" font-size="14">timestamptz</text>
+<text x="1055" y="1322" font-size="14"></text>
+<rect x="621" y="1332" width="518" height="30" fill="#f0f7f2"/>
+<text x="632" y="1352" font-size="14">termin_odbioru</text>
+<text x="880.0" y="1352" font-size="14">timestamptz</text>
+<text x="1055" y="1352" font-size="14"></text>
+<rect x="621" y="1362" width="518" height="30" fill="#ffffff"/>
+<text x="632" y="1382" font-size="14">odebrana_at</text>
+<text x="880.0" y="1382" font-size="14">timestamptz ?</text>
+<text x="1055" y="1382" font-size="14"></text>
+<rect x="621" y="1392" width="518" height="30" fill="#f0f7f2"/>
+<text x="632" y="1412" font-size="14">termin_zwrotu</text>
+<text x="880.0" y="1412" font-size="14">timestamptz ?</text>
+<text x="1055" y="1412" font-size="14"></text>
+<rect x="621" y="1422" width="518" height="30" fill="#ffffff"/>
+<text x="632" y="1442" font-size="14">anulowana_at</text>
+<text x="880.0" y="1442" font-size="14">timestamptz ?</text>
+<text x="1055" y="1442" font-size="14"></text>
+<rect x="621" y="1452" width="518" height="30" fill="#f0f7f2"/>
+<text x="632" y="1472" font-size="14">zwrocona_at</text>
+<text x="880.0" y="1472" font-size="14">timestamptz ?</text>
+<text x="1055" y="1472" font-size="14"></text>
+<text x="1200" y="850" font-size="17" font-weight="bold">Legenda i zakres</text>
+<text x="1200" y="876" font-size="13">PK — klucz główny; FK — klucz obcy</text>
+<text x="1200" y="895" font-size="13">UK — unikalność; ? — dopuszczalne NULL</text>
+<text x="1200" y="914" font-size="13">Pozostałe kolumny: NOT NULL</text>
+<text x="1200" y="933" font-size="13">1 : N — jeden rekord do wielu rekordów</text>
+<text x="1200" y="952" font-size="13">Tabele auth grup i uprawnień, sesji,</text>
+<text x="1200" y="971" font-size="13">admina i migracji pominięto.</text>
+<text x="1200" y="1090" font-size="17" font-weight="bold">Indeksy rezerwacji</text>
+<text x="1200" y="1116" font-size="13">rez_status_odbior_idx:</text>
+<text x="1200" y="1135" font-size="13">(status, termin_odbioru)</text>
+<text x="1200" y="1154" font-size="13">rez_status_zwrot_idx:</text>
+<text x="1200" y="1173" font-size="13">(status, termin_zwrotu)</text>
+<text x="1200" y="1192" font-size="13">Klucze obce mają indeksy Django.</text>
+<text x="1200" y="1310" font-size="17" font-weight="bold">Ograniczenia rezerwacji</text>
+<text x="1200" y="1336" font-size="13">jedna_aktywna_rez_na_egz:</text>
+<text x="1200" y="1355" font-size="13">UNIQUE (egzemplarz_id) WHERE</text>
+<text x="1200" y="1374" font-size="13">status IN (OCZEKUJACA, ODEBRANA)</text>
+<text x="1200" y="1393" font-size="13"></text>
+<text x="1200" y="1412" font-size="13">odbior_po_utworzeniu:</text>
+<text x="1200" y="1431" font-size="13">termin_odbioru &gt; utworzona_at</text>
+<text x="1200" y="1450" font-size="13"></text>
+<text x="1200" y="1469" font-size="13">poprawny_termin_zwrotu:</text>
+<text x="1200" y="1488" font-size="13">odebrana_at i termin_zwrotu oba NULL</text>
+<text x="1200" y="1507" font-size="13">lub oba podane, a termin zwrotu</text>
+<text x="1200" y="1526" font-size="13">późniejszy od daty odbioru.</text>
+<text x="40" y="1575" font-size="14">po_terminie jest właściwością Pythona, nie kolumną. PROTECT to reguła usuwania w ORM Django.</text>
+</svg>
