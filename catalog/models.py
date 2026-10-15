@@ -5,6 +5,11 @@ from django.db import models
 class Autor(models.Model):
     imie = models.CharField("imię", max_length=100)
     nazwisko = models.CharField("nazwisko", max_length=150)
+    zdjecie = models.ImageField(
+        "zdjęcie autora",
+        upload_to="autorzy/",
+        blank=True,
+    )
 
     class Meta:
         verbose_name = "autor"
@@ -30,6 +35,11 @@ class Gatunek(models.Model):
 class Ksiazka(models.Model):
     tytul = models.CharField("tytuł", max_length=255)
     opis = models.TextField("opis", blank=True)
+    okladka = models.ImageField(
+        "okładka książki",
+        upload_to="okladki/",
+        blank=True,
+    )
     isbn = models.CharField("ISBN", max_length=13, unique=True, blank=True, null=True)
     rok_wydania = models.PositiveSmallIntegerField("rok wydania", blank=True, null=True)
     autorzy = models.ManyToManyField(

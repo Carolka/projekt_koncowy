@@ -21,3 +21,6 @@ staticfiles/
 
 # Lokalny plan projektu
 /PLAN.md
+
+# Zdjęcia dodawane do aplikacji
+/media/
