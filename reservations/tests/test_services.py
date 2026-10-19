@@ -1,11 +1,19 @@
 from datetime import timedelta
+from unittest.mock import patch
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AnonymousUser
+from django.core.exceptions import PermissionDenied
 from django.test import TestCase
 from django.utils import timezone
 
 from catalog.models import Egzemplarz, Ksiazka
 from reservations.models import Rezerwacja
-from reservations.services import expire_reservations
+from reservations.services import (
+    AlreadyReserved,
+    NoAvailableCopy,
+    expire_reservations,
+    reserve_book,
+)
 
 
 class ExpireReservationsTests(TestCase):
@@ -142,3 +150,111 @@ class ExpireReservationsTests(TestCase):
 
         # nadal ma byc niedostepny - bo zostal odebrany ale nie zwrocony
         self.assertFalse(self.copy.dostepny)
+
+
+class ReserveBookTests(TestCase):
+    def setUp(self):
+        self.now = timezone.now()
+        self.user = get_user_model().objects.create_user(
+            username="czytelnik", password="TestoweHaslo123!"
+        )
+        self.book = Ksiazka.objects.create(
+            tytul="Ksiazka testowa",
+        )
+        self.egzemplarz = Egzemplarz.objects.create(
+            ksiazka=self.book,
+            numer_inwentarzowy="TEST-001",
+        )
+
+    def test_creates_reservation_for_48_hours(self):
+        # reserve_book nie przyjmuje godziny - kontrolujemy jej wartosc z pomocą patch
+        with patch("reservations.services.timezone.now", return_value=self.now):
+            rezerwacja = reserve_book(self.user, self.book.pk)
+
+        rezerwacja.refresh_from_db()
+        self.egzemplarz.refresh_from_db()
+
+        self.assertEqual(rezerwacja.uzytkownik, self.user)
+        self.assertEqual(rezerwacja.egzemplarz, self.egzemplarz)
+        self.assertEqual(rezerwacja.status, Rezerwacja.Status.OCZEKUJACA)
+        self.assertEqual(rezerwacja.utworzona_at, self.now)
+        self.assertEqual(
+            rezerwacja.termin_odbioru,
+            self.now + timedelta(hours=48),
+        )
+        self.assertFalse(self.egzemplarz.dostepny)
+
+    def test_rejects_anonymous_user(self):
+        with self.assertRaises(PermissionDenied):
+            reserve_book(AnonymousUser(), self.book.pk)
+
+        self.assertFalse(Rezerwacja.objects.exists())
+
+    def test_rejects_inactive_user(self):
+        self.user.is_active = False
+        self.user.save(update_fields=["is_active"])
+
+        with self.assertRaises(PermissionDenied):
+            reserve_book(self.user, self.book.pk)
+
+        # nie powstaje rezerwacja - mamy błąd - tylko exists
+        self.assertFalse(Rezerwacja.objects.exists())
+
+    def test_rejects_reservation_when_no_copy_is_available(self):
+        self.egzemplarz.dostepny = False
+        self.egzemplarz.save(update_fields=["dostepny"])
+
+        with self.assertRaises(NoAvailableCopy):
+            reserve_book(self.user, self.book.pk)
+
+        self.assertFalse(Rezerwacja.objects.exists())
+
+    def test_rejects_withdrawn_copy(self):
+        self.egzemplarz.aktywny = False
+        self.egzemplarz.save(update_fields=["aktywny"])
+
+        with self.assertRaises(NoAvailableCopy):
+            reserve_book(self.user, self.book.pk)
+        self.assertFalse(Rezerwacja.objects.exists())
+
+    def test_rejects_second_reservation_of_the_same_book(self):
+        # użytkownik nie może rezerwować kolejnego egzemplarza tej samej książki
+
+        reserve_book(self.user, self.book.pk)
+
+        drugi_egzemplarz = Egzemplarz.objects.create(
+            ksiazka=self.book,
+            numer_inwentarzowy="TEST-002",
+        )
+        with self.assertRaises(AlreadyReserved):
+            reserve_book(self.user, self.book.pk)
+
+        drugi_egzemplarz.refresh_from_db()
+
+        self.assertEqual(Rezerwacja.objects.count(), 1)
+        self.assertTrue(drugi_egzemplarz.dostepny)
+
+    def test_reuses_copy_after_pickup_deadline(self):
+        self.egzemplarz.dostepny = False
+        self.egzemplarz.save(update_fields=["dostepny"])
+
+        stara_rezerwacja = Rezerwacja.objects.create(
+            uzytkownik=self.user,
+            egzemplarz=self.egzemplarz,
+            utworzona_at=self.now - timedelta(hours=48),
+            termin_odbioru=self.now,
+        )
+
+        with patch("reservations.services.timezone.now", return_value=self.now):
+            nowa_rezerwacja = reserve_book(self.user, self.book.pk)
+
+        stara_rezerwacja.refresh_from_db()
+        self.egzemplarz.refresh_from_db()
+
+        self.assertEqual(
+            stara_rezerwacja.status,
+            Rezerwacja.Status.WYGASLA,
+        )
+        self.assertNotEqual(nowa_rezerwacja.pk, stara_rezerwacja.pk)
+        self.assertEqual(nowa_rezerwacja.egzemplarz, self.egzemplarz)
+        self.assertFalse(self.egzemplarz.dostepny)
