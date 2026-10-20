@@ -21,6 +21,10 @@ class ReservationNotCancellable(Exception):
     """Rezerwacji nie można anulować w jej obecnym stanie."""
 
 
+class ReservationNotCollectable(Exception):
+    """Rezerwacji nie można odebrać w jej obecnym stanie."""
+
+
 def expire_reservations(now=None):
     """Wygasza nieodebrane rezerwacje i zwraca ich liczbę."""
     now = now if now is not None else timezone.now()
@@ -99,29 +103,6 @@ def reserve_book(user, book_id):
 
         now = timezone.now()
 
-        # wygaszamy przeterminowane rezerwacje dla wybranej ksiazki
-        wygasle_rezerwacje = list(
-            Rezerwacja.objects.select_for_update()
-            .filter(
-                egzemplarz__ksiazka=ksiazka,
-                status=Rezerwacja.Status.OCZEKUJACA,
-                termin_odbioru__lte=now,
-            )
-            .order_by("pk")
-            .values_list("pk", "egzemplarz_id")
-        )
-
-        if wygasle_rezerwacje:
-            rezerwacja_ids = [rezerwacja_id for rezerwacja_id, _ in wygasle_rezerwacje]
-
-            egzemplarz_ids = [egzemplarz_id for _, egzemplarz_id in wygasle_rezerwacje]
-
-            Rezerwacja.objects.filter(pk__in=rezerwacja_ids).update(
-                status=Rezerwacja.Status.WYGASLA,
-            )
-
-            Egzemplarz.objects.filter(pk__in=egzemplarz_ids).update(dostepny=True)
-
         # czy są jakieś aktualne rezerwacje książki
         biezace_rezerwacje = Rezerwacja.objects.filter(
             egzemplarz__ksiazka=ksiazka,
@@ -170,9 +151,11 @@ def reserve_book(user, book_id):
 
 
 def cancel_reservation(reservation_id, user):
-    """Anuluje oczekującą rezerwację lub oznacza ją jako wygasłą."""
+    """Anuluje oczekującą rezerwację przed terminem odbioru."""
+
     if not user.is_authenticated or not user.is_active:
         raise PermissionDenied("Anulowanie wymaga zalogowanego, aktywnego konta.")
+
     with transaction.atomic():
         powiazania = Rezerwacja.objects.values(
             "egzemplarz_id",
@@ -199,31 +182,90 @@ def cancel_reservation(reservation_id, user):
                 "Nie masz odpowiednich uprawnień do anulowania tej rezerwacji."
             )
 
-        # jeśli rezerwacja jest juz anulowana lub wygasla -
-        # kończymy działanie bez ponownego zmieniania dostępnosci egzemplarza
-        if rezerwacja.status in [
-            Rezerwacja.Status.ANULOWANA,
-            Rezerwacja.Status.WYGASLA,
-        ]:
+        # Ponowne anulowanie nie zmienia dat ani dostępności egzemplarza.
+        if rezerwacja.status == Rezerwacja.Status.ANULOWANA:
             return rezerwacja
 
         if rezerwacja.status != Rezerwacja.Status.OCZEKUJACA:
             raise ReservationNotCancellable(
                 "Anulować można tylko rezerwację oczekującą na odbiór."
             )
+
         now = timezone.now()
 
         if rezerwacja.termin_odbioru <= now:
-            rezerwacja.status = Rezerwacja.Status.WYGASLA
-            rezerwacja.save(update_fields=["status"])
-        else:
-            rezerwacja.status = Rezerwacja.Status.ANULOWANA
-            rezerwacja.anulowana_at = now
-            rezerwacja.save(
-                update_fields=["status", "anulowana_at"],
+            raise ReservationNotCancellable(
+                "Termin odbioru minął. Rezerwacji nie można już anulować."
             )
+
+        rezerwacja.status = Rezerwacja.Status.ANULOWANA
+        rezerwacja.anulowana_at = now
+        rezerwacja.save(update_fields=["status", "anulowana_at"])
         # udostępnienie egzemplarza do wypożyczania
         egzemplarz.dostepny = True
+        egzemplarz.save(update_fields=["dostepny"])
+
+        return rezerwacja
+
+
+def collect_reservation(reservation_id, user):
+    """Potwierdza odbiór książki przed terminem i ustala termin zwrotu."""
+    if not user.is_authenticated or not user.is_active:
+        raise PermissionDenied(
+            "Potwierdzenie odbioru wymaga zalogowanego, aktywnego konta."
+        )
+
+    if not user.has_perm("reservations.collect_reservation"):
+        raise PermissionDenied("Nie masz uprawnień do potwierdzania odbioru książek.")
+
+    with transaction.atomic():
+        powiazania = Rezerwacja.objects.values(
+            "egzemplarz_id",
+            "egzemplarz__ksiazka_id",
+        ).get(pk=reservation_id)
+
+        Ksiazka.objects.select_for_update().get(
+            pk=powiazania["egzemplarz__ksiazka_id"],
+        )
+
+        egzemplarz = Egzemplarz.objects.select_for_update().get(
+            pk=powiazania["egzemplarz_id"],
+        )
+
+        rezerwacja = Rezerwacja.objects.select_for_update().get(
+            pk=reservation_id,
+        )
+
+        # jeśli odbiór został już potwierdzony zakańczamy bez zmiany daty odbioru i terminu zwrotu
+        if rezerwacja.status == Rezerwacja.Status.ODEBRANA:
+            return rezerwacja
+
+        # Rezerwacji wygasłej nie można odebrać.
+        if rezerwacja.status == Rezerwacja.Status.WYGASLA:
+            raise ReservationNotCollectable(
+                "Termin odbioru minął. Utwórz nową rezerwację."
+            )
+
+        if rezerwacja.status != Rezerwacja.Status.OCZEKUJACA:
+            raise ReservationNotCollectable(
+                "Odebrać można tylko książkę z rezerwacją oczekującą."
+            )
+
+        now = timezone.now()
+
+        if rezerwacja.termin_odbioru <= now:
+            raise ReservationNotCollectable(
+                "Termin odbioru minął. Utwórz nową rezerwację."
+            )
+
+        rezerwacja.status = Rezerwacja.Status.ODEBRANA
+        rezerwacja.odebrana_at = now
+        rezerwacja.termin_zwrotu = now + timedelta(days=14)
+        rezerwacja.save(
+            update_fields=["status", "odebrana_at", "termin_zwrotu"],
+        )
+
+        egzemplarz.dostepny = False
         egzemplarz.save(update_fields=["dostepny"])
 
         return rezerwacja
