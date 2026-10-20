@@ -1,7 +1,7 @@
 from datetime import timedelta
 from unittest.mock import patch
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import AnonymousUser
+from django.contrib.auth.models import AnonymousUser, Permission
 from django.core.exceptions import PermissionDenied
 from django.test import TestCase
 from django.utils import timezone
@@ -11,8 +11,10 @@ from reservations.models import Rezerwacja
 from reservations.services import (
     AlreadyReserved,
     NoAvailableCopy,
+    ReservationNotCancellable,
     expire_reservations,
     reserve_book,
+    cancel_reservation,
 )
 
 
@@ -258,3 +260,250 @@ class ReserveBookTests(TestCase):
         self.assertNotEqual(nowa_rezerwacja.pk, stara_rezerwacja.pk)
         self.assertEqual(nowa_rezerwacja.egzemplarz, self.egzemplarz)
         self.assertFalse(self.egzemplarz.dostepny)
+
+
+class CancelReservationTests(TestCase):
+    def setUp(self):
+        self.now = timezone.now()
+
+        self.user = get_user_model().objects.create_user(
+            username="czytelnik",
+            password="TestoweHaslo123!",
+        )
+
+        self.book = Ksiazka.objects.create(tytul="Ksiazka testowa")
+
+        # dwa egzemplarze z nadanymi z góry id
+        self.egzemplarz = Egzemplarz.objects.create(
+            pk=200,
+            ksiazka=self.book,
+            numer_inwentarzowy="TEST-200",
+            dostepny=False,
+        )
+
+        self.inny_egzemplarz = Egzemplarz.objects.create(
+            pk=100,
+            ksiazka=self.book,
+            numer_inwentarzowy="TEST-100",
+            dostepny=False,
+        )
+
+        self.reservation = Rezerwacja.objects.create(
+            pk=100,
+            uzytkownik=self.user,
+            egzemplarz=self.egzemplarz,
+            status=Rezerwacja.Status.OCZEKUJACA,
+            utworzona_at=self.now,
+            termin_odbioru=self.now + timedelta(hours=48),
+        )
+
+    def test_cancellation_releases_only_the_reserved_copy(self):
+        with patch("reservations.services.timezone.now", return_value=self.now):
+            wynik = cancel_reservation(
+                reservation_id=self.reservation.pk,
+                user=self.user,
+            )
+        self.reservation.refresh_from_db()
+        self.egzemplarz.refresh_from_db()
+        self.inny_egzemplarz.refresh_from_db()
+
+        self.assertEqual(wynik.pk, self.reservation.pk)
+        self.assertEqual(
+            self.reservation.status,
+            Rezerwacja.Status.ANULOWANA,
+        )
+        self.assertEqual(self.reservation.anulowana_at, self.now)
+        self.assertTrue(self.egzemplarz.dostepny)
+        self.assertFalse(self.inny_egzemplarz.dostepny)
+
+    def test_rejects_anonymous_or_inactive_user(self):
+
+        self.user.is_active = False
+        self.user.save(update_fields=["is_active"])
+
+        przypadki = [
+            ("niezalogowany", AnonymousUser()),
+            ("nieaktywny", self.user),
+        ]
+        for nazwa, user in przypadki:
+            with self.subTest(przypadek=nazwa):
+                with self.assertRaises(PermissionDenied):
+                    cancel_reservation(
+                        reservation_id=self.reservation.pk,
+                        user=user,
+                    )
+                self.reservation.refresh_from_db()
+                self.egzemplarz.refresh_from_db()
+
+                # sprawdzamy czy rezerwacja jest nadal nie zmieniona
+                self.assertEqual(
+                    self.reservation.status,
+                    Rezerwacja.Status.OCZEKUJACA,
+                )
+                self.assertFalse(self.egzemplarz.dostepny)
+
+    def test_rejects_cancellation_by_another_user(self):
+        inny_user = get_user_model().objects.create_user(
+            username="inny_czytelnik",
+            password="TestoweHaslo123!",
+        )
+        with self.assertRaises(PermissionDenied):
+            cancel_reservation(self.reservation.pk, inny_user)
+
+        self.reservation.refresh_from_db()
+        self.egzemplarz.refresh_from_db()
+        self.assertEqual(
+            self.reservation.status,
+            Rezerwacja.Status.OCZEKUJACA,
+        )
+        self.assertFalse(self.egzemplarz.dostepny)
+
+    def test_user_with_permission_can_cancel_another_users_reservation(self):
+        bibliotekarka = get_user_model().objects.create_user(
+            username="bibliotekarka",
+            password="TestoweHaslo123!",
+            is_staff=True,
+        )
+        uprawnienie = Permission.objects.get(
+            content_type__app_label="reservations",
+            content_type__model="rezerwacja",
+            codename="cancel_reservation",
+        )
+        bibliotekarka.user_permissions.add(uprawnienie)
+
+        with patch("reservations.services.timezone.now", return_value=self.now):
+            cancel_reservation(self.reservation.pk, bibliotekarka)
+
+        self.reservation.refresh_from_db()
+        self.egzemplarz.refresh_from_db()
+
+        self.assertEqual(
+            self.reservation.status,
+            Rezerwacja.Status.ANULOWANA,
+        )
+
+        self.assertEqual(self.reservation.anulowana_at, self.now)
+        self.assertTrue(self.egzemplarz.dostepny)
+
+    def test_cancellation_at_or_after_deadline_expires_reservation(self):
+        # dla dwoch warunkow [at, after]
+        for opoznienie in [timedelta(0), timedelta(hours=1)]:
+            with self.subTest(opoznienie=opoznienie):
+                self.reservation.status = Rezerwacja.Status.OCZEKUJACA
+                self.reservation.anulowana_at = None
+                self.reservation.save(
+                    update_fields=["status", "anulowana_at"],
+                )
+
+                self.egzemplarz.dostepny = False
+                self.egzemplarz.save(update_fields=["dostepny"])
+
+                czas = self.reservation.termin_odbioru + opoznienie
+
+                with patch(
+                    "reservations.services.timezone.now",
+                    return_value=czas,
+                ):
+                    wynik = cancel_reservation(
+                        self.reservation.pk,
+                        self.user,
+                    )
+
+                self.reservation.refresh_from_db()
+                self.egzemplarz.refresh_from_db()
+                self.assertEqual(
+                    wynik.status,
+                    Rezerwacja.Status.WYGASLA,
+                )
+                self.assertEqual(
+                    self.reservation.status,
+                    Rezerwacja.Status.WYGASLA,
+                )
+                self.assertIsNone(self.reservation.anulowana_at)
+                self.assertTrue(self.egzemplarz.dostepny)
+
+    def test_rejects_collected_or_completed_reservations(self):
+        for status in [
+            Rezerwacja.Status.ODEBRANA,
+            Rezerwacja.Status.ZAKONCZONA,
+        ]:
+            with self.subTest(status=status):
+                # ustawiamy True/False - wynik porównania
+                czy_zakonczona = status == Rezerwacja.Status.ZAKONCZONA
+
+                self.reservation.status = status
+                self.reservation.odebrana_at = self.now
+                self.reservation.termin_zwrotu = self.now + timedelta(days=14)
+                self.reservation.zwrocona_at = (
+                    self.now + timedelta(days=1) if czy_zakonczona else None
+                )
+                self.reservation.save()
+
+                self.egzemplarz.dostepny = czy_zakonczona
+                self.egzemplarz.save(update_fields=["dostepny"])
+
+                with self.assertRaises(ReservationNotCancellable):
+                    cancel_reservation(self.reservation.pk, self.user)
+
+                self.reservation.refresh_from_db()
+                self.egzemplarz.refresh_from_db()
+
+                self.assertEqual(self.reservation.status, status)
+                self.assertIsNone(self.reservation.anulowana_at)
+                self.assertEqual(self.egzemplarz.dostepny, czy_zakonczona)
+
+    def test_repeated_cancellation_does_not_release_new_reservation(self):
+        with patch("reservations.services.timezone.now", return_value=self.now):
+            cancel_reservation(self.reservation.pk, self.user)
+
+        inny_user = get_user_model().objects.create_user(
+            username="nowy_czytelnik",
+            password="TestoweHaslo123!",
+        )
+
+        with patch("reservations.services.timezone.now", return_value=self.now):
+            nowa_rezerwacja = reserve_book(inny_user, self.book.pk)
+
+        self.assertEqual(
+            nowa_rezerwacja.egzemplarz_id,
+            self.reservation.egzemplarz_id,
+        )
+
+        with patch(
+            "reservations.services.timezone.now",
+            return_value=self.now + timedelta(minutes=5),
+        ):
+            cancel_reservation(self.reservation.pk, self.user)
+
+        self.reservation.refresh_from_db()
+        nowa_rezerwacja.refresh_from_db()
+        self.egzemplarz.refresh_from_db()
+
+        self.assertEqual(
+            self.reservation.status,
+            Rezerwacja.Status.ANULOWANA,
+        )
+        self.assertEqual(self.reservation.anulowana_at, self.now)
+
+        self.assertEqual(
+            nowa_rezerwacja.status,
+            Rezerwacja.Status.OCZEKUJACA,
+        )
+        self.assertFalse(self.egzemplarz.dostepny)
+
+    def test_cancellation_does_not_reactivate_withdrawn_copy(self):
+        self.egzemplarz.aktywny = False
+        self.egzemplarz.save(update_fields=["aktywny"])
+
+        with patch("reservations.services.timezone.now", return_value=self.now):
+            cancel_reservation(self.reservation.pk, self.user)
+
+        self.reservation.refresh_from_db()
+        self.egzemplarz.refresh_from_db()
+
+        self.assertEqual(
+            self.reservation.status,
+            Rezerwacja.Status.ANULOWANA,
+        )
+        self.assertTrue(self.egzemplarz.dostepny)
+        self.assertFalse(self.egzemplarz.aktywny)

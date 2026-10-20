@@ -17,6 +17,10 @@ class NoAvailableCopy(Exception):
     """Brak egzemplarza, który można zarezerwować."""
 
 
+class ReservationNotCancellable(Exception):
+    """Rezerwacji nie można anulować w jej obecnym stanie."""
+
+
 def expire_reservations(now=None):
     """Wygasza nieodebrane rezerwacje i zwraca ich liczbę."""
     now = now if now is not None else timezone.now()
@@ -160,6 +164,66 @@ def reserve_book(user, book_id):
             termin_odbioru=now + timedelta(hours=48),
         )
         egzemplarz.dostepny = False
+        egzemplarz.save(update_fields=["dostepny"])
+
+        return rezerwacja
+
+
+def cancel_reservation(reservation_id, user):
+    """Anuluje oczekującą rezerwację lub oznacza ją jako wygasłą."""
+    if not user.is_authenticated or not user.is_active:
+        raise PermissionDenied("Anulowanie wymaga zalogowanego, aktywnego konta.")
+    with transaction.atomic():
+        powiazania = Rezerwacja.objects.values(
+            "egzemplarz_id",
+            "egzemplarz__ksiazka_id",
+        ).get(pk=reservation_id)
+
+        Ksiazka.objects.select_for_update().get(
+            pk=powiazania["egzemplarz__ksiazka_id"],
+        )
+
+        egzemplarz = Egzemplarz.objects.select_for_update().get(
+            pk=powiazania["egzemplarz_id"],
+        )
+
+        rezerwacja = Rezerwacja.objects.select_for_update().get(
+            pk=reservation_id,
+        )
+
+        # sprawdzamy czy użytkownik chce anulować swoją rezerwację lub czy ma uprawnienia
+        if rezerwacja.uzytkownik_id != user.pk and not user.has_perm(
+            "reservations.cancel_reservation"
+        ):
+            raise PermissionDenied(
+                "Nie masz odpowiednich uprawnień do anulowania tej rezerwacji."
+            )
+
+        # jeśli rezerwacja jest juz anulowana lub wygasla -
+        # kończymy działanie bez ponownego zmieniania dostępnosci egzemplarza
+        if rezerwacja.status in [
+            Rezerwacja.Status.ANULOWANA,
+            Rezerwacja.Status.WYGASLA,
+        ]:
+            return rezerwacja
+
+        if rezerwacja.status != Rezerwacja.Status.OCZEKUJACA:
+            raise ReservationNotCancellable(
+                "Anulować można tylko rezerwację oczekującą na odbiór."
+            )
+        now = timezone.now()
+
+        if rezerwacja.termin_odbioru <= now:
+            rezerwacja.status = Rezerwacja.Status.WYGASLA
+            rezerwacja.save(update_fields=["status"])
+        else:
+            rezerwacja.status = Rezerwacja.Status.ANULOWANA
+            rezerwacja.anulowana_at = now
+            rezerwacja.save(
+                update_fields=["status", "anulowana_at"],
+            )
+        # udostępnienie egzemplarza do wypożyczania
+        egzemplarz.dostepny = True
         egzemplarz.save(update_fields=["dostepny"])
 
         return rezerwacja
