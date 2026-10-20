@@ -3,8 +3,12 @@ from unittest.mock import patch
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser, Permission
 from django.core.exceptions import PermissionDenied
-from django.test import TestCase
+from django.db import close_old_connections, connection
+from django.test import TestCase, TransactionTestCase
 from django.utils import timezone
+
+from concurrent.futures import ThreadPoolExecutor
+from threading import Barrier
 
 from catalog.models import Egzemplarz, Ksiazka
 from reservations.models import Rezerwacja
@@ -812,3 +816,78 @@ class ReturnReservationTests(TestCase):
 
         self.assertTrue(self.egzemplarz.dostepny)
         self.assertFalse(self.egzemplarz.aktywny)
+
+
+class ConcurrentReservationTests(TransactionTestCase):
+    def setUp(self):
+        if connection.vendor != "postgresql":
+            self.skipTest("Test wymaga PostgreSQL.")
+
+        self.book = Ksiazka.objects.create(
+            tytul="Ksiazka do testu wspolbieznosci",
+        )
+
+        self.copy = Egzemplarz.objects.create(
+            ksiazka=self.book,
+            numer_inwentarzowy="WSP-001",
+        )
+
+        self.user_a = get_user_model().objects.create_user(
+            username="czytelnik_wsp_a",
+        )
+        self.user_b = get_user_model().objects.create_user(
+            username="czytelnik_wsp_b",
+        )
+
+    @staticmethod
+    def _try_reserve(user_id, book_id, start_barrier):
+        # każdy wątek ma własne połączenie z bazą
+        close_old_connections()
+
+        try:
+            user = get_user_model().objects.get(pk=user_id)
+
+            # bariera - wątki czekają tu aby zacząć próbę razem
+            start_barrier.wait(timeout=10)
+
+            reserve_book(user, book_id)
+            return "success"
+        except NoAvailableCopy:
+            return "no-copy"
+        finally:
+            close_old_connections()
+
+    def test_only_one_user_can_reserve_last_copy_at_the_same_time(self):
+        start_barrier = Barrier(2)
+
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            wyniki_zadan = [
+                executor.submit(
+                    self._try_reserve,
+                    self.user_a.pk,
+                    self.book.pk,
+                    start_barrier,
+                ),
+                executor.submit(
+                    self._try_reserve,
+                    self.user_b.pk,
+                    self.book.pk,
+                    start_barrier,
+                ),
+            ]
+
+            wyniki = [wynik.result(timeout=20) for wynik in wyniki_zadan]
+
+            self.assertCountEqual(wyniki, ["success", "no-copy"])
+
+            aktywne_rezerwacje = Rezerwacja.objects.filter(
+                egzemplarz=self.copy,
+                status__in=[
+                    Rezerwacja.Status.OCZEKUJACA,
+                    Rezerwacja.Status.ODEBRANA,
+                ],
+            )
+            self.assertEqual(aktywne_rezerwacje.count(), 1)
+
+            self.copy.refresh_from_db()
+            self.assertFalse(self.copy.dostepny)
