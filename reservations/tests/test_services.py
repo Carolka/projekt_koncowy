@@ -12,11 +12,13 @@ from reservations.services import (
     AlreadyReserved,
     NoAvailableCopy,
     ReservationNotCancellable,
+    ReservationNotReturnable,
     ReservationNotCollectable,
     collect_reservation,
     expire_reservations,
     reserve_book,
     cancel_reservation,
+    return_reservation,
 )
 
 
@@ -653,3 +655,160 @@ class CollectReservationTests(TestCase):
                 self.assertIsNone(self.reservation.odebrana_at)
                 self.assertIsNone(self.reservation.termin_zwrotu)
                 self.assertTrue(self.egzemplarz.dostepny)
+
+
+class ReturnReservationTests(TestCase):
+    def setUp(self):
+        self.now = timezone.now()
+        self.user = get_user_model().objects.create_user(username="czytelnik")
+        self.bibliotekarka = get_user_model().objects.create_user(
+            username="bibliotekarka",
+            is_staff=True,
+        )
+
+        self.bibliotekarka.user_permissions.add(
+            Permission.objects.get(
+                content_type__app_label="reservations",
+                content_type__model="rezerwacja",
+                codename="return_reservation",
+            )
+        )
+
+        self.book = Ksiazka.objects.create(tytul="Książka testowa")
+        self.egzemplarz = Egzemplarz.objects.create(
+            ksiazka=self.book,
+            numer_inwentarzowy="ZWROT-001",
+            dostepny=False,
+        )
+
+        self.reservation = Rezerwacja.objects.create(
+            uzytkownik=self.user,
+            egzemplarz=self.egzemplarz,
+            status=Rezerwacja.Status.ODEBRANA,
+            utworzona_at=self.now - timedelta(days=14),
+            termin_odbioru=self.now - timedelta(days=14) + timedelta(hours=48),
+            odebrana_at=self.now - timedelta(days=14),
+            termin_zwrotu=self.now + timedelta(days=1),
+        )
+
+    def test_confirms_return_before_or_after_deadline(self):
+        for opoznienie in [timedelta(days=1), -timedelta(days=1)]:
+            with self.subTest(opoznienie=opoznienie):
+                self.reservation.status = Rezerwacja.Status.ODEBRANA
+                self.reservation.zwrocona_at = None
+                self.reservation.termin_zwrotu = self.now + opoznienie
+                self.reservation.save(
+                    update_fields=["status", "zwrocona_at", "termin_zwrotu"],
+                )
+
+                self.egzemplarz.dostepny = False
+                self.egzemplarz.save(update_fields=["dostepny"])
+
+                with patch(
+                    "reservations.services.timezone.now",
+                    return_value=self.now,
+                ):
+                    wynik = return_reservation(
+                        self.reservation.pk,
+                        self.bibliotekarka,
+                    )
+
+                self.reservation.refresh_from_db()
+                self.egzemplarz.refresh_from_db()
+
+                self.assertEqual(wynik.pk, self.reservation.pk)
+                self.assertEqual(
+                    self.reservation.status,
+                    Rezerwacja.Status.ZAKONCZONA,
+                )
+                self.assertEqual(self.reservation.zwrocona_at, self.now)
+                self.assertTrue(self.egzemplarz.dostepny)
+
+    def test_rejects_anonymous_inactive_or_unauthorized_user(self):
+        self.bibliotekarka.is_active = False
+        self.bibliotekarka.save(update_fields=["is_active"])
+
+        for user in [AnonymousUser(), self.user, self.bibliotekarka]:
+            with self.subTest(user=str(user)):
+                with self.assertRaises(PermissionDenied):
+                    return_reservation(self.reservation.pk, user)
+
+                self.reservation.refresh_from_db()
+                self.egzemplarz.refresh_from_db()
+
+                self.assertEqual(
+                    self.reservation.status,
+                    Rezerwacja.Status.ODEBRANA,
+                )
+                self.assertIsNone(self.reservation.zwrocona_at)
+                self.assertFalse(self.egzemplarz.dostepny)
+
+    def test_rejects_reservations_that_are_not_collected(self):
+        for status in [
+            Rezerwacja.Status.OCZEKUJACA,
+            Rezerwacja.Status.ANULOWANA,
+            Rezerwacja.Status.WYGASLA,
+        ]:
+            with self.subTest(status=status):
+                self.reservation.status = status
+                self.reservation.save(update_fields=["status"])
+
+                with self.assertRaises(ReservationNotReturnable):
+                    return_reservation(
+                        self.reservation.pk,
+                        self.bibliotekarka,
+                    )
+                self.reservation.refresh_from_db()
+                self.egzemplarz.refresh_from_db()
+
+                self.assertEqual(self.reservation.status, status)
+                self.assertIsNone(self.reservation.zwrocona_at)
+                self.assertFalse(self.egzemplarz.dostepny)
+
+    def test_repeated_return_does_not_release_copy_reserved_again(self):
+        with patch("reservations.services.timezone.now", return_value=self.now):
+            return_reservation(self.reservation.pk, self.bibliotekarka)
+
+        inny_user = get_user_model().objects.create_user(
+            username="inny_czytelnik",
+        )
+
+        with patch("reservations.services.timezone.now", return_value=self.now):
+            nowa_rezerwacja = reserve_book(inny_user, self.book.pk)
+
+        with patch("reservations.services.timezone.now", return_value=self.now):
+            return_reservation(self.reservation.pk, self.bibliotekarka)
+
+        self.reservation.refresh_from_db()
+        nowa_rezerwacja.refresh_from_db()
+        self.egzemplarz.refresh_from_db()
+
+        self.assertEqual(
+            self.reservation.status,
+            Rezerwacja.Status.ZAKONCZONA,
+        )
+
+        self.assertEqual(self.reservation.zwrocona_at, self.now)
+        self.assertEqual(
+            nowa_rezerwacja.status,
+            Rezerwacja.Status.OCZEKUJACA,
+        )
+        self.assertFalse(self.egzemplarz.dostepny)
+
+    def test_return_does_not_reactivate_withdrawn_copy(self):
+        self.egzemplarz.aktywny = False
+        self.egzemplarz.save(update_fields=["aktywny"])
+
+        with patch("reservations.services.timezone.now", return_value=self.now):
+            return_reservation(self.reservation.pk, self.bibliotekarka)
+
+        self.reservation.refresh_from_db()
+        self.egzemplarz.refresh_from_db()
+
+        self.assertEqual(
+            self.reservation.status,
+            Rezerwacja.Status.ZAKONCZONA,
+        )
+
+        self.assertTrue(self.egzemplarz.dostepny)
+        self.assertFalse(self.egzemplarz.aktywny)

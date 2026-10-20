@@ -25,6 +25,10 @@ class ReservationNotCollectable(Exception):
     """Rezerwacji nie można odebrać w jej obecnym stanie."""
 
 
+class ReservationNotReturnable(Exception):
+    """Rezerwacji nie można zwrócić w jej obecnym stanie."""
+
+
 def expire_reservations(now=None):
     """Wygasza nieodebrane rezerwacje i zwraca ich liczbę."""
     now = now if now is not None else timezone.now()
@@ -266,6 +270,56 @@ def collect_reservation(reservation_id, user):
         )
 
         egzemplarz.dostepny = False
+        egzemplarz.save(update_fields=["dostepny"])
+
+        return rezerwacja
+
+
+def return_reservation(reservation_id, user):
+    """Potwierdza zwrot odebranego egzemplarza."""
+    if not user.is_authenticated or not user.is_active:
+        raise PermissionDenied(
+            "Potwierdzenie zwrotu wymaga zalogowanego, aktywnego konta."
+        )
+
+    if not user.has_perm("reservations.return_reservation"):
+        raise PermissionDenied("Nie masz uprawnień do potwierdzania zwrotu książek.")
+
+    with transaction.atomic():
+        powiazania = Rezerwacja.objects.values(
+            "egzemplarz_id",
+            "egzemplarz__ksiazka_id",
+        ).get(pk=reservation_id)
+
+        Ksiazka.objects.select_for_update().get(
+            pk=powiazania["egzemplarz__ksiazka_id"],
+        )
+
+        egzemplarz = Egzemplarz.objects.select_for_update().get(
+            pk=powiazania["egzemplarz_id"],
+        )
+
+        rezerwacja = Rezerwacja.objects.select_for_update().get(
+            pk=reservation_id,
+        )
+
+        # jeśli jest już zakończona — nie zmieniamy ponownie jej daty zwrotu
+        # ani dostępności egzemplarza, który mógł już zostać zarezerwowany.
+        if rezerwacja.status == Rezerwacja.Status.ZAKONCZONA:
+            return rezerwacja
+
+        if rezerwacja.status != Rezerwacja.Status.ODEBRANA:
+            raise ReservationNotReturnable("Zwrócić można tylko odebraną książkę.")
+
+        now = timezone.now()
+
+        rezerwacja.status = Rezerwacja.Status.ZAKONCZONA
+        rezerwacja.zwrocona_at = now
+        rezerwacja.save(
+            update_fields=["status", "zwrocona_at"],
+        )
+
+        egzemplarz.dostepny = True
         egzemplarz.save(update_fields=["dostepny"])
 
         return rezerwacja
