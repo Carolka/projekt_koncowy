@@ -1,0 +1,107 @@
+#header {
+    background-color: #246b4b;
+    color: #ffffff;
+}
+
+#branding h1 a:link,
+#branding h1 a:visited {
+    color: #ffffff;
+}
+
+#user-tools,
+#user-tools a:link,
+#user-tools a:visited {
+    color: #e7f4ec;
+}
+
+div.breadcrumbs {
+    background-color: #e7f1ea;
+    color: #234735;
+}
+
+div.breadcrumbs a:link,
+div.breadcrumbs a:visited {
+    color: #246b4b;
+}
+
+:root {
+    --library-admin-link-color: #246b4b;
+    --library-admin-link-hover-color: #194d35;
+}
+
+@media (prefers-color-scheme: dark) {
+    html:not([data-theme="light"]) {
+        --library-admin-link-color: #ffffff;
+        --library-admin-link-hover-color: #e7f4ec;
+    }
+}
+
+html[data-theme="dark"] {
+    --library-admin-link-color: #ffffff;
+    --library-admin-link-hover-color: #e7f4ec;
+}
+
+#content a:link:not(.button),
+#content a:visited:not(.button) {
+    color: var(--library-admin-link-color);
+}
+
+#content a:hover:not(.button),
+#content a:focus:not(.button) {
+    color: var(--library-admin-link-hover-color);
+}
+
+#content .module h2 a:link,
+#content .module h2 a:visited,
+#content .module caption a:link,
+#content .module caption a:visited,
+#content .inline-group h2 a:link,
+#content .inline-group h2 a:visited {
+    color: #ffffff;
+}
+
+#content .module h2 a:hover,
+#content .module h2 a:focus,
+#content .module caption a:hover,
+#content .module caption a:focus,
+#content .inline-group h2 a:hover,
+#content .inline-group h2 a:focus {
+    color: #e7f4ec;
+}
+
+.module h2,
+.module caption,
+.inline-group h2 {
+    background-color: #367c5b;
+}
+
+.button,
+input[type='submit'],
+input[type='button'],
+.submit-row input,
+a.button {
+    background-color: #367c5b;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+}
+
+.button:hover,
+input[type='submit']:hover,
+input[type='button']:hover,
+.submit-row input:hover,
+a.button:hover {
+    background-color: #246b4b;
+}
+
+.button.default,
+input[type='submit'].default,
+.submit-row input.default {
+    background-color: #194d35;
+}
+
+.button.default:hover,
+input[type='submit'].default:hover,
+.submit-row input.default:hover {
+    background-color: #123a28;
+}
