@@ -137,3 +137,64 @@ class BookListViewTests(TestCase):
         self.assertEqual(page_obj.paginator.per_page, 20)
         self.assertEqual(len(page_obj.object_list), 1)
         self.assertTrue(page_obj.has_previous())
+
+
+class BookDetailViewTests(TestCase):
+    def setUp(self):
+        self.autor = Autor.objects.create(
+            imie="Frank",
+            nazwisko="Herbert",
+        )
+        self.gatunek = Gatunek.objects.create(nazwa="Science fiction")
+        self.ksiazka = Ksiazka.objects.create(
+            tytul="Diuna",
+            opis="Opis książki.",
+            isbn="9780441013593",
+            rok_wydania=1965,
+        )
+        self.ksiazka.autorzy.add(self.autor)
+        self.ksiazka.gatunki.add(self.gatunek)
+
+        Egzemplarz.objects.create(
+            ksiazka=self.ksiazka,
+            numer_inwentarzowy="DETAIL-001",
+            aktywny=True,
+            dostepny=True,
+        )
+
+        Egzemplarz.objects.create(
+            ksiazka=self.ksiazka,
+            numer_inwentarzowy="DETAIL-002",
+            aktywny=True,
+            dostepny=False,
+        )
+        Egzemplarz.objects.create(
+            ksiazka=self.ksiazka,
+            numer_inwentarzowy="DETAIL-003",
+            aktywny=False,
+            dostepny=True,
+        )
+
+    def test_detail_page_displays_book_and_availability(self):
+        response = self.client.get(
+            reverse("catalog:book_detail", args=[self.ksiazka.pk])
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "catalog/book_detail.html")
+        self.assertContains(response, "Diuna")
+        self.assertContains(response, "Frank Herbert")
+        self.assertContains(response, "Science fiction")
+        self.assertContains(response, self.ksiazka.isbn)
+        self.assertEqual(
+            response.context["liczba_aktywnych_egzemplarzy"],
+            2,
+        )
+        self.assertEqual(
+            response.context["liczba_dostepnych_egzemplarzy"],
+            1,
+        )
+
+    def test_detail_page_returns_404_for_unknown_book(self):
+        response = self.client.get(reverse("catalog:book_detail", args=[999999]))
+        self.assertEqual(response.status_code, 404)

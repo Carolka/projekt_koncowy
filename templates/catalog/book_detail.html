@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %} {{ ksiazka.tytul }}{% endblock %}
+
+{% block content %}
+<p>
+    <a href="{% url 'catalog:book_list' %}">Wróć do katalogu</a>
+</p>
+<h1> {{ ksiazka.tytul }}</h1>
+{% if ksiazka.okladka %}
+<img src="{{ksiazka.okladka.url }}" alt="Okładka książki {{ ksiazka.tytul }}">
+{% endif %}
+{% if ksiazka.opis %}
+<p>{{ ksiazka.opis }}</p>
+{% endif %}
+
+<p>
+    Autorzy:
+    {% for autor in ksiazka.autorzy.all %}
+    {{ autor }} {% if not forloop.last %}, {% endif %}
+    {% empty %}
+    Nie podano
+    {% endfor %}
+</p>
+
+<p>
+    Gatunki:
+    {% for gatunek in ksiazka.gatunki.all %}
+    {{ gatunek }}{% if not forloop.last %}, {% endif %}
+    {% empty %}
+    Nie przypisano gatunku
+    {% endfor %}
+</p>
+{% if ksiazka.isbn %}
+<p>ISBN: {{ ksiazka.isbn }}</p>
+{% endif %}
+{% if ksiazka.rok_wydania %}
+<p>Rok wydania: {{ ksiazka.rok_wydania }}</p>
+{% endif %}
+
+<p>
+    Dostępnych egzemplarzy:
+    {{ liczba_dostepnych_egzemplarzy }}
+    z {{ liczba_aktywnych_egzemplarzy }} aktywnych
+</p>
+{% endblock %}
