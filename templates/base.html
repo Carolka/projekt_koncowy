@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title%} Katalog biblioteczny{% endblock %}</title>
+</head>
+
+<body>
+    <header>
+        <a href="{% url 'catalog:book_list' %}"> Katalog książek</a>
+        <nav>
+            {% if user.is_authenticated %}
+            <span>Zalogowano jako {{user.username}}</span>
+            <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{% url 'catalog:book_list' %}">
+                <button type="submit">Wyloguj się</button>
+            </form>
+            {% else %}
+            <a href="{% url 'login' %}">Zaloguj się</a>
+            <a href="{% url 'accounts:register' %}">Zarejestruj się</a>
+            {% endif %}
+        </nav>
+    </header>
+    <main>
+        {% block content %} {% endblock %}
+    </main>
+
+</body>
+
+</html>

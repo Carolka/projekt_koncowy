@@ -135,7 +135,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 
 LOGIN_URL = "login"
-LOGIN_REDIRECT_URL = "reservations:my_reservations"
+LOGIN_REDIRECT_URL = "catalog:book_list"
 LOGOUT_REDIRECT_URL = "catalog:book_list"
 
 MEDIA_URL = "/media/"

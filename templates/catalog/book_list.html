@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block title %}Katalog książek{% endblock %}
+
+{% block content %}
+<h1>Katalog książek</h1>
+
+<form method="get" action="{% url 'catalog:book_list' %}">
+    {{form.as_p}}
+    <button type="submit">Szukaj</button>
+</form>
+<ul>
+    {% for ksiazka in page_obj %}
+    <li>
+        <h2> {{ ksiazka.tytul }}</h2>
+        <p> Autorzy:
+            {% for autor in ksiazka.autorzy.all %}
+            {{autor}}{% if not forloop.last %}, {% endif %}
+            {% empty %}
+            Nie podano
+            {% endfor %}
+        </p>
+        {% if ksiazka.isbn %}
+        <p>ISBN: {{ksiazka.isbn}}</p>
+        {% endif %}
+
+        <p> Gatunki:
+            {% for gatunek in ksiazka.gatunki.all %}
+            {{gatunek}} {% if not forloop.last %}, {% endif %}
+            {% empty %}
+            Nie przypisano gatunku
+            {% endfor %}
+        </p>
+    </li>
+    {%empty %}
+    <li>Nie znaleziono książek.</li>
+    {% endfor %}
+</ul>
+{% if page_obj.has_other_pages %}
+<nav aria-label="Stronicowanie">
+    {% if page_obj.has_previous %}
+    <a href="?{{ query_string }}page={{ page_obj.previous_page_number }}">
+        Poprzednia
+    </a>
+    {% endif %}
+    <span>
+        Strona {{ page_obj.number }} z {{ page_obj.paginator.num_pages }}
+    </span>
+    {% if page_obj.has_next %}
+    <a href="?{{ query_string }}page={{page_obj.next_page_number}}">
+        Następna
+    </a>
+    {% endif %}
+</nav>
+{% endif %}
+{% endblock %}
