@@ -182,3 +182,33 @@ class LoginViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.context["form"].errors)
         self.assertNotIn("_auth_user_id", self.client.session)
+
+
+class LogoutViewTests(TestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(
+            username="czytelnik_wylogowanie",
+            password="MocneHaslo#427",
+        )
+
+    def test_post_logout_clears_user_session(self):
+        self.client.force_login(self.user)
+        self.assertIn("_auth_user_id", self.client.session)
+
+        adres_po_wylogowaniu = reverse("login")
+        response = self.client.post(
+            reverse("logout"),
+            data={"next": adres_po_wylogowaniu},
+        )
+        self.assertRedirects(
+            response,
+            adres_po_wylogowaniu,
+            fetch_redirect_response=False,
+        )
+        self.assertNotIn("_auth_user_id", self.client.session)
+
+    def test_get_request_does_not_log_out_user(self):
+        self.client.force_login(self.user)
+        response = self.client.get(reverse("logout"))
+        self.assertEqual(response.status_code, 405)
+        self.assertIn("_auth_user_id", self.client.session)
