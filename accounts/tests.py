@@ -1,6 +1,9 @@
 from django.contrib.auth.models import Group
+from django.contrib.auth import get_user_model
+from django.urls import reverse
 from django.core.management import call_command
 from django.test import TestCase
+from accounts.forms import RegistrationForm
 
 
 # Create your tests here.
@@ -49,4 +52,87 @@ class SetupRolesCommandTests(TestCase):
         self.assertEqual(
             Group.objects.filter(name="Bibliotekarki").count(),
             1,
+        )
+
+
+class RegistrationFormTests(TestCase):
+    def test_accepts_valid_username_and_passwords(self):
+        form = RegistrationForm(
+            data={
+                "username": "czytelnik_test",
+                "password1": "MocneHaslo#427",
+                "password2": "MocneHaslo#427",
+            }
+        )
+
+        self.assertTrue(form.is_valid(), form.errors)
+
+        user = form.save()
+        self.assertEqual(user.username, "czytelnik_test")
+        self.assertTrue(user.check_password("MocneHaslo#427"))
+
+    def test_rejects_different_passwords(self):
+        form = RegistrationForm(
+            data={
+                "username": "czytelnik_test",
+                "password1": "MocneHaslo#427",
+                "password2": "InneHaslo#438",
+            }
+        )
+        self.assertFalse(form.is_valid())
+        self.assertIn("password2", form.errors)
+
+    def test_rejects_weak_password(self):
+        form = RegistrationForm(
+            data={
+                "username": "czytelnik_test",
+                "password1": "1234",
+                "password2": "1234",
+            }
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertIn("password2", form.errors)
+
+
+class RegisterViewTests(TestCase):
+    def test_get_display_registration_form(self):
+        response = self.client.get(reverse("accounts:register"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "accounts/register.html")
+        self.assertIsInstance(response.context["form"], RegistrationForm)
+
+    def test_valid_post_creates_user_and_redirects_to_login(self):
+        response = self.client.post(
+            reverse("accounts:register"),
+            data={
+                "username": "czytelnik_widok",
+                "password1": "MocneHaslo#427",
+                "password2": "MocneHaslo#427",
+            },
+        )
+
+        self.assertRedirects(
+            response,
+            reverse("login"),
+            fetch_redirect_response=False,
+        )
+
+        user = get_user_model().objects.get(username="czytelnik_widok")
+        self.assertTrue(user.check_password("MocneHaslo#427"))
+
+    def test_invalid_post_does_not_create_user(self):
+        response = self.client.post(
+            reverse("accounts:register"),
+            data={
+                "username": "czytelnik_blad",
+                "password1": "MocneHaslo#427",
+                "password2": "InneHaslo#438",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("password2", response.context["form"].errors)
+        self.assertFalse(
+            get_user_model().objects.filter(username="czytelnik_blad").exists()
         )

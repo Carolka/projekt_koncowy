@@ -16,12 +16,15 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("accounts/", include("accounts.urls")),
+    # udostępnienie wbudowanych adresow Django do logowania i wylogowania
+    path("accounts/", include("django.contrib.auth.urls")),
 ]
 
 if settings.DEBUG:
