@@ -25,6 +25,7 @@ urlpatterns = [
     path("accounts/", include("accounts.urls")),
     # udostępnienie wbudowanych adresow Django do logowania i wylogowania
     path("accounts/", include("django.contrib.auth.urls")),
+    path("", include("reservations.urls")),
     path("", include("catalog.urls")),
 ]
 
