@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Logowanie - Katalog biblioteczny</title>
+</head>
+
+<body>
+    <main>
+        <h1>Logowanie</h1>
+
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+
+            {% if next %}
+            <input type="hidden" name="next" value="{{ next }}">
+            {% endif %}
+
+            <button type="submit">Zaloguj się</button>
+        </form>
+        <p>
+            Nie masz konta?
+            <a href="{% url 'accounts:register' %}"> Zarejestruj się</a>
+        </p>
+    </main>
+</body>
+
+</html>

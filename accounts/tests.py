@@ -136,3 +136,49 @@ class RegisterViewTests(TestCase):
         self.assertFalse(
             get_user_model().objects.filter(username="czytelnik_blad").exists()
         )
+
+
+class LoginViewTests(TestCase):
+    def setUp(self):
+        self.haslo = "MocneHaslo#427"
+        self.user = get_user_model().objects.create_user(
+            username="czytelnik_logowanie",
+            password=self.haslo,
+        )
+
+    def test_get_display_login_form(self):
+        response = self.client.get(reverse("login"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "registration/login.html")
+
+    def test_valid_login_authenticates_user(self):
+        adres_po_zalogowaniu = reverse("accounts:register")
+
+        response = self.client.post(
+            reverse("login"),
+            data={
+                "username": self.user.username,
+                "password": self.haslo,
+                "next": adres_po_zalogowaniu,
+            },
+        )
+        self.assertRedirects(
+            response,
+            adres_po_zalogowaniu,
+            fetch_redirect_response=False,
+        )
+        self.assertIn("_auth_user_id", self.client.session)
+
+    def test_invalid_login_does_not_authenticate_user(self):
+        response = self.client.post(
+            reverse("login"),
+            data={
+                "username": self.user.username,
+                "password": "NiepoprawneHaslo#123",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context["form"].errors)
+        self.assertNotIn("_auth_user_id", self.client.session)
