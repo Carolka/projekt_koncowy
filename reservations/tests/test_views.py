@@ -91,3 +91,100 @@ class ReserveBookViewTests(TestCase):
         response = self.client.get(self.adres_rezerwacji)
         self.assertEqual(response.status_code, 405)
         self.assertEqual(Rezerwacja.objects.count(), 0)
+
+
+class CancelReservationViewTests(TestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(
+            username="czytelnik_anulowanie",
+            password="MocneHaslo#427",
+        )
+        self.ksiazka = Ksiazka.objects.create(tytul="Diuna")
+        self.teraz = timezone.now()
+
+        self.egzemplarz = Egzemplarz.objects.create(
+            ksiazka=self.ksiazka,
+            numer_inwentarzowy="CANCEL-001",
+            aktywny=True,
+            dostepny=False,
+        )
+
+        self.rezerwacja = Rezerwacja.objects.create(
+            uzytkownik=self.user,
+            egzemplarz=self.egzemplarz,
+            status=Rezerwacja.Status.OCZEKUJACA,
+            utworzona_at=self.teraz,
+            termin_odbioru=self.teraz + timedelta(hours=48),
+        )
+        self.adres_anulowania = reverse(
+            "reservations:cancel_reservation",
+            args=[self.rezerwacja.pk],
+        )
+
+    def test_reader_can_cancel_own_pending_reservation(self):
+        self.client.force_login(self.user)
+
+        with patch("reservations.services.timezone.now", return_value=self.teraz):
+            response = self.client.post(self.adres_anulowania)
+
+        self.assertRedirects(
+            response,
+            reverse("catalog:book_detail", args=[self.ksiazka.pk]),
+            fetch_redirect_response=False,
+        )
+
+        self.rezerwacja.refresh_from_db()
+        self.egzemplarz.refresh_from_db()
+
+        self.assertEqual(
+            self.rezerwacja.status,
+            Rezerwacja.Status.ANULOWANA,
+        )
+
+        self.assertEqual(self.rezerwacja.anulowana_at, self.teraz)
+        self.assertTrue(self.egzemplarz.dostepny)
+        self.assertEqual(Rezerwacja.objects.count(), 1)
+
+    def test_anonymous_reader_is_redirected_to_login(self):
+        response = self.client.post(self.adres_anulowania)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response["Location"].startswith(reverse("login")))
+
+        self.rezerwacja.refresh_from_db()
+        self.egzemplarz.refresh_from_db()
+
+        self.assertEqual(
+            self.rezerwacja.status,
+            Rezerwacja.Status.OCZEKUJACA,
+        )
+
+        self.assertFalse(self.egzemplarz.dostepny)
+
+    def test_reader_cannot_cancel_another_users_reservation(self):
+        other_user = get_user_model().objects.create_user(
+            username="inny_czytelnik",
+            password="MocneHaslo#427",
+        )
+        self.client.force_login(other_user)
+
+        response = self.client.post(self.adres_anulowania)
+        self.assertEqual(response.status_code, 403)
+        self.rezerwacja.refresh_from_db()
+        self.egzemplarz.refresh_from_db()
+
+        self.assertEqual(
+            self.rezerwacja.status,
+            Rezerwacja.Status.OCZEKUJACA,
+        )
+        self.assertFalse(self.egzemplarz.dostepny)
+
+    def test_get_request_does_not_cancel_reservation(self):
+        self.client.force_login(self.user)
+        response = self.client.get(self.adres_anulowania)
+        self.assertEqual(response.status_code, 405)
+        self.rezerwacja.refresh_from_db()
+        self.assertEqual(
+            self.rezerwacja.status,
+            Rezerwacja.Status.OCZEKUJACA,
+        )
