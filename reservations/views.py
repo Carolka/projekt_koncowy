@@ -1,7 +1,9 @@
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_GET
+from django.db.models import Q
+from django.utils import timezone
 from catalog.models import Ksiazka
 from reservations.services import (
     AlreadyReserved,
@@ -50,4 +52,55 @@ def cancel_reservation_view(request, reservation_id):
     return redirect(
         "catalog:book_detail",
         pk=rezerwacja.egzemplarz.ksiazka_id,
+    )
+
+
+@login_required
+@require_GET
+def my_reservations(request):
+    teraz = timezone.now()
+
+    rezerwacje = (
+        Rezerwacja.objects.filter(
+            uzytkownik=request.user,
+        )
+        .select_related(
+            "egzemplarz__ksiazka",
+        )
+        .order_by(
+            "-utworzona_at",
+            "-pk",
+        )
+    )
+
+    biezace_rezerwacje = rezerwacje.filter(
+        Q(
+            status=Rezerwacja.Status.OCZEKUJACA,
+            termin_odbioru__gt=teraz,
+        )
+        | Q(status=Rezerwacja.Status.ODEBRANA)
+    )
+
+    historyczne_rezerwacje = rezerwacje.filter(
+        Q(
+            status__in=[
+                Rezerwacja.Status.ANULOWANA,
+                Rezerwacja.Status.WYGASLA,
+                Rezerwacja.Status.ZAKONCZONA,
+            ]
+        )
+        | Q(
+            status=Rezerwacja.Status.OCZEKUJACA,
+            termin_odbioru__lte=teraz,
+        )
+    )
+
+    return render(
+        request,
+        "reservations/my_reservations.html",
+        {
+            "biezace_rezerwacje": biezace_rezerwacje,
+            "historyczne_rezerwacje": historyczne_rezerwacje,
+            "teraz": teraz,
+        },
     )

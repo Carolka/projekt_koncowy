@@ -188,3 +188,153 @@ class CancelReservationViewTests(TestCase):
             self.rezerwacja.status,
             Rezerwacja.Status.OCZEKUJACA,
         )
+
+
+class MyReservationsViewTests(TestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(
+            username="czytelnik_panelu",
+            password="MocneHaslo#427",
+        )
+        self.other_user = get_user_model().objects.create_user(
+            username="inny_czytelnik_panelu",
+            password="MocneHaslo#427",
+        )
+        self.ksiazka = Ksiazka.objects.create(tytul="Diuna")
+        self.teraz = timezone.now()
+        self.adres_panelu = reverse("reservations:my_reservations")
+
+    def _utworz_rezerwacje(
+        self,
+        *,
+        uzytkownik,
+        numer,
+        status,
+        utworzona_at,
+        termin_odbioru,
+        odebrana_at=None,
+        termin_zwrotu=None,
+        anulowana_at=None,
+        zwrocona_at=None,
+    ):
+        egzemplarz = Egzemplarz.objects.create(
+            ksiazka=self.ksiazka,
+            numer_inwentarzowy=numer,
+            aktywny=True,
+            dostepny=False,
+        )
+        return Rezerwacja.objects.create(
+            uzytkownik=uzytkownik,
+            egzemplarz=egzemplarz,
+            status=status,
+            utworzona_at=utworzona_at,
+            termin_odbioru=termin_odbioru,
+            odebrana_at=odebrana_at,
+            termin_zwrotu=termin_zwrotu,
+            anulowana_at=anulowana_at,
+            zwrocona_at=zwrocona_at,
+        )
+
+    def test_anonymous_reader_is_redirected_to_login(self):
+        response = self.client.get(self.adres_panelu)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response["Location"].startswith(reverse("login")))
+
+    def test_reader_sees_own_reservations_in_current_and_history_sections(self):
+        oczekujaca = self._utworz_rezerwacje(
+            uzytkownik=self.user,
+            numer="PANEL-001",
+            status=Rezerwacja.Status.OCZEKUJACA,
+            utworzona_at=self.teraz - timedelta(hours=1),
+            termin_odbioru=self.teraz + timedelta(hours=48),
+        )
+        odebrana = self._utworz_rezerwacje(
+            uzytkownik=self.user,
+            numer="PANEL-002",
+            status=Rezerwacja.Status.ODEBRANA,
+            utworzona_at=self.teraz - timedelta(days=2),
+            termin_odbioru=self.teraz + timedelta(days=1),
+            odebrana_at=self.teraz - timedelta(hours=1),
+            termin_zwrotu=self.teraz + timedelta(days=13),
+        )
+        przeterminowana_oczekujaca = self._utworz_rezerwacje(
+            uzytkownik=self.user,
+            numer="PANEL-003",
+            status=Rezerwacja.Status.OCZEKUJACA,
+            utworzona_at=self.teraz - timedelta(days=2),
+            termin_odbioru=self.teraz - timedelta(hours=1),
+        )
+        anulowana = self._utworz_rezerwacje(
+            uzytkownik=self.user,
+            numer="PANEL-004",
+            status=Rezerwacja.Status.ANULOWANA,
+            utworzona_at=self.teraz - timedelta(days=3),
+            termin_odbioru=self.teraz - timedelta(days=2),
+            anulowana_at=self.teraz - timedelta(days=2, hours=12),
+        )
+        wygasla = self._utworz_rezerwacje(
+            uzytkownik=self.user,
+            numer="PANEL-005",
+            status=Rezerwacja.Status.WYGASLA,
+            utworzona_at=self.teraz - timedelta(days=3),
+            termin_odbioru=self.teraz - timedelta(days=2),
+        )
+        zakonczona = self._utworz_rezerwacje(
+            uzytkownik=self.user,
+            numer="PANEL-006",
+            status=Rezerwacja.Status.ZAKONCZONA,
+            utworzona_at=self.teraz - timedelta(days=20),
+            termin_odbioru=self.teraz - timedelta(days=19),
+            odebrana_at=self.teraz - timedelta(days=18),
+            termin_zwrotu=self.teraz - timedelta(days=4),
+            zwrocona_at=self.teraz - timedelta(days=3),
+        )
+        rezerwacja_innego_uzytkownika = self._utworz_rezerwacje(
+            uzytkownik=self.other_user,
+            numer="PANEL-007",
+            status=Rezerwacja.Status.OCZEKUJACA,
+            utworzona_at=self.teraz - timedelta(hours=1),
+            termin_odbioru=self.teraz + timedelta(days=2),
+        )
+
+        self.client.force_login(self.user)
+        response = self.client.get(self.adres_panelu)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "reservations/my_reservations.html")
+
+        biezace_ids = set(
+            response.context["biezace_rezerwacje"].values_list("pk", flat=True)
+        )
+
+        historyczne_ids = set(
+            response.context["historyczne_rezerwacje"].values_list("pk", flat=True)
+        )
+
+        self.assertSetEqual(
+            biezace_ids,
+            {oczekujaca.pk, odebrana.pk},
+        )
+
+        self.assertSetEqual(
+            historyczne_ids,
+            {
+                przeterminowana_oczekujaca.pk,
+                anulowana.pk,
+                wygasla.pk,
+                zakonczona.pk,
+            },
+        )
+
+        self.assertNotIn(
+            rezerwacja_innego_uzytkownika.pk,
+            biezace_ids | historyczne_ids,
+        )
+
+        self.assertContains(response, "Wygasła")
+
+    def test_post_request_to_panel_returns_method_not_allowed(self):
+        self.client.force_login(self.user)
+        response = self.client.post(self.adres_panelu)
+        self.assertEqual(response.status_code, 405)

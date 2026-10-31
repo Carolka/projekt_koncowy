@@ -14,4 +14,9 @@ urlpatterns = [
         views.cancel_reservation_view,
         name="cancel_reservation",
     ),
+    path(
+        "reservations/",
+        views.my_reservations,
+        name="my_reservations",
+    ),
 ]

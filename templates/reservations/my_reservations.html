@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %} Moje rezerwacje {% endblock %}
+
+{% block content %}
+<h1> Moje rezerwacje</h1>
+<h2>Bieżące</h2>
+{% for rezerwacja in biezace_rezerwacje %}
+<article>
+    <h3>
+        <a href="{% url 'catalog:book_detail' rezerwacja.egzemplarz.ksiazka.pk %}">
+            {{ rezerwacja.egzemplarz.ksiazka.tytul }}
+        </a>
+    </h3>
+    <p> Egzemplarz: {{ rezerwacja.egzemplarz.numer_inwentarzowy }}</p>
+    <p> Status: {{ rezerwacja.get_status_display }}</p>
+    {% if rezerwacja.status == "OCZEKUJACA" %}
+    <p> Termin odbioru: {{ rezerwacja.termin_odbioru|date:"d.m.Y H:i" }}</p>
+    <form method="post" action="{% url 'reservations:cancel_reservation' rezerwacja.pk %}">
+        {% csrf_token %}
+        <button type="submit">Anuluj rezerwację</button>
+    </form>
+    {% elif rezerwacja.status == "ODEBRANA" %}
+    <p> Termin zwrotu: {{ rezerwacja.termin_zwrotu|date:"d.m.Y H:i" }}</p>
+    {% endif %}
+</article>
+{% empty %}
+<p> Nie masz bieżących rezerwacji.</p>
+{% endfor %}
+
+<h2> Historia </h2>
+{% for rezerwacja in historyczne_rezerwacje %}
+<article>
+    <h3>
+        <a href="{% url 'catalog:book_detail' rezerwacja.egzemplarz.ksiazka.pk %}">
+            {{ rezerwacja.egzemplarz.ksiazka.tytul }}
+        </a>
+    </h3>
+    <p> Egzemplarz: {{ rezerwacja.egzemplarz.numer_inwentarzowy }}</p>
+    {% if rezerwacja.status == "OCZEKUJACA" and rezerwacja.termin_odbioru <= teraz %} <p> Status: Wygasła </p>
+        {% else %}
+        <p> Status: {{ rezerwacja.get_status_display }}</p>
+        {% endif %}
+</article>
+{% empty %}
+<p>Historia rezerwacji jest pusta.</p>
+{% endfor %}
+{% endblock %}

@@ -12,6 +12,7 @@
         <nav>
             {% if user.is_authenticated %}
             <span>Zalogowano jako {{user.username}}</span>
+            <a href="{% url 'reservations:my_reservations' %}">Moje rezerwacje</a>
             <form method="post" action="{% url 'logout' %}">
                 {% csrf_token %}
                 <input type="hidden" name="next" value="{% url 'catalog:book_list' %}">
