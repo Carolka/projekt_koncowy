@@ -12,6 +12,8 @@ from reservations.services import (
     reserve_book,
     ReservationNotCancellable,
     ReservationNotCollectable,
+    ReservationNotReturnable,
+    return_reservation,
     cancel_reservation,
     expire_reservations,
     collect_reservation,
@@ -148,6 +150,15 @@ def librarian_reservations(request):
     for rezerwacja in page_obj:
         rezerwacja.mozna_potwierdzic_odbior = (
             rezerwacja.status == Rezerwacja.Status.OCZEKUJACA
+            and request.user.has_perm("reservations.collect_reservation")
+        )
+        rezerwacja.mozna_potwierdzic_zwrot = (
+            rezerwacja.status == Rezerwacja.Status.ODEBRANA
+            and request.user.has_perm("reservations.return_reservation")
+        )
+        rezerwacja.ma_akcje = (
+            rezerwacja.mozna_potwierdzic_odbior
+            or rezerwacja.mozna_potwierdzic_zwrot
         )
     parametry = request.GET.copy()
     parametry.pop("page", None)
@@ -198,5 +209,26 @@ def collect_reservation_view(request, reservation_id):
         messages.error(request, str(error))
     else:
         messages.success(request, "Odbiór książki został potwierdzony.")
+
+    return redirect("reservations:librarian_reservations")
+
+
+@require_POST
+@login_required
+@permission_required(
+    "reservations.return_reservation",
+    raise_exception=True,
+)
+def return_reservation_view(request, reservation_id):
+    rezerwacja = get_object_or_404(
+        Rezerwacja,
+        pk=reservation_id,
+    )
+    try:
+        return_reservation(rezerwacja.pk, request.user)
+    except ReservationNotReturnable as error:
+        messages.error(request, str(error))
+    else:
+        messages.success(request, "Zwrot książki został potwierdzony.")
 
     return redirect("reservations:librarian_reservations")

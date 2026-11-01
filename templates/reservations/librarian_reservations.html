@@ -38,7 +38,14 @@
                     {% csrf_token %}
                     <button type="submit">Potwierdź odbiór</button>
                 </form>
-                {% else %}
+                {% endif %}
+                {% if rezerwacja.mozna_potwierdzic_zwrot %}
+                <form method="post" action="{% url 'reservations:return_reservation' rezerwacja.pk %}">
+                    {% csrf_token %}
+                    <button type="submit">Potwierdź zwrot</button>
+                </form>
+                {% endif %}
+                {% if not rezerwacja.ma_akcje %}
                 -
                 {% endif %}
             </td>
