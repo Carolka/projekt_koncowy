@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.views.decorators.http import require_POST, require_GET
 from django.db.models import Q
 from django.utils import timezone
@@ -11,6 +11,7 @@ from reservations.services import (
     reserve_book,
     ReservationNotCancellable,
     cancel_reservation,
+    expire_reservations,
 )
 from reservations.models import Rezerwacja
 

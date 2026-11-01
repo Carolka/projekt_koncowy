@@ -3,6 +3,7 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from .forms import BookSearchForm
 from .models import Ksiazka
+from reservations.services import expire_reservations
 
 
 # Create your views here.
@@ -29,6 +30,8 @@ def book_list(request):
             ksiazki = ksiazki.filter(gatunki=gatunek)
 
         if tylko_dostepne == "tak":
+            expire_reservations()
+
             ksiazki = ksiazki.filter(
                 egzemplarze__aktywny=True,
                 egzemplarze__dostepny=True,
@@ -57,6 +60,9 @@ def book_list(request):
 
 
 def book_detail(request, pk):
+    # zwolnienie egzemplarzy przeterminowanych rezerwacji
+    expire_reservations()
+
     ksiazka = get_object_or_404(
         Ksiazka.objects.prefetch_related("autorzy", "gatunki"),
         pk=pk,

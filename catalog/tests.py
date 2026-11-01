@@ -1,7 +1,12 @@
+from datetime import timedelta
+from unittest.mock import patch
 from django.test import TestCase
 from django.urls import reverse
+from django.contrib.auth import get_user_model
+from django.utils import timezone
 from catalog.forms import BookSearchForm
 from catalog.models import Gatunek, Autor, Egzemplarz, Ksiazka
+from reservations.models import Rezerwacja
 
 
 # Create your tests here.
@@ -138,6 +143,42 @@ class BookListViewTests(TestCase):
         self.assertEqual(len(page_obj.object_list), 1)
         self.assertTrue(page_obj.has_previous())
 
+    def test_available_filter_expires_overdue_reservation_before_filtering(self):
+        teraz = timezone.now()
+        ksiazka = Ksiazka.objects.create(tytul="Przetrzymana rezerwacja")
+        egzemplarz = Egzemplarz.objects.create(
+            ksiazka=ksiazka,
+            numer_inwentarzowy="LIST-OVERDUE-001",
+            aktywny=True,
+            dostepny=False,
+        )
+        uzytkownik = get_user_model().objects.create_user(
+            username="czytelnik_testowy",
+            password="TestoweHaslo123!",
+        )
+        rezerwacja = Rezerwacja.objects.create(
+            uzytkownik=uzytkownik,
+            egzemplarz=egzemplarz,
+            status=Rezerwacja.Status.OCZEKUJACA,
+            utworzona_at=teraz - timedelta(hours=50),
+            termin_odbioru=teraz - timedelta(hours=2),
+        )
+
+        with patch("reservations.services.timezone.now", return_value=teraz):
+            response = self.client.get(
+                reverse("catalog:book_list"),
+                {"dostepne": "tak"},
+            )
+        rezerwacja.refresh_from_db()
+        egzemplarz.refresh_from_db()
+        pokazane_id = [
+            ksiazka.pk for ksiazka in response.context["page_obj"].object_list
+        ]
+
+        self.assertEqual(rezerwacja.status, Rezerwacja.Status.WYGASLA)
+        self.assertTrue(egzemplarz.dostepny)
+        self.assertIn(ksiazka.pk, pokazane_id)
+
 
 class BookDetailViewTests(TestCase):
     def setUp(self):
@@ -198,3 +239,40 @@ class BookDetailViewTests(TestCase):
     def test_detail_page_returns_404_for_unknown_book(self):
         response = self.client.get(reverse("catalog:book_detail", args=[999999]))
         self.assertEqual(response.status_code, 404)
+
+    def test_detail_expires_overdue_reservation_before_showing_availability(self):
+        teraz = timezone.now()
+        egzemplarz = Egzemplarz.objects.get(
+            numer_inwentarzowy="DETAIL-001",
+        )
+        egzemplarz.dostepny = False
+        egzemplarz.save(update_fields=["dostepny"])
+
+        uzytkownik = get_user_model().objects.create_user(
+            username="czytelnik_testowy",
+            password="TestoweHaslo123!",
+        )
+
+        rezerwacja = Rezerwacja.objects.create(
+            uzytkownik=uzytkownik,
+            egzemplarz=egzemplarz,
+            status=Rezerwacja.Status.OCZEKUJACA,
+            utworzona_at=teraz - timedelta(hours=50),
+            termin_odbioru=teraz - timedelta(hours=2),
+        )
+
+        with patch("reservations.services.timezone.now", return_value=teraz):
+            response = self.client.get(
+                reverse("catalog:book_detail", args=[self.ksiazka.pk])
+            )
+
+        rezerwacja.refresh_from_db()
+        egzemplarz.refresh_from_db()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(rezerwacja.status, Rezerwacja.Status.WYGASLA)
+        self.assertTrue(egzemplarz.dostepny)
+        self.assertEqual(
+            response.context["liczba_dostepnych_egzemplarzy"],
+            1,
+        )
