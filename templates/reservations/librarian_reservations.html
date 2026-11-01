@@ -21,6 +21,7 @@
 <table>
     <thead>
         <tr>
+            <th>Akcja</th>
             <th>Użytkownik</th>
             <th>Książka</th>
             <th>Numer egzemplarza</th>
@@ -32,6 +33,15 @@
     <tbody>
         {% for rezerwacja in rezerwacje %}
         <tr>
+            <td> {% if rezerwacja.mozna_potwierdzic_odbior %}
+                <form method="post" action="{% url 'reservations:collect_reservation' rezerwacja.pk %}">
+                    {% csrf_token %}
+                    <button type="submit">Potwierdź odbiór</button>
+                </form>
+                {% else %}
+                -
+                {% endif %}
+            </td>
             <td>{{ rezerwacja.uzytkownik.username }}</td>
             <td>{{ rezerwacja.egzemplarz.ksiazka.tytul }}</td>
             <td>{{ rezerwacja.egzemplarz.numer_inwentarzowy }}</td>
@@ -41,7 +51,7 @@
         </tr>
         {% empty %}
         <tr>
-            <td colspan="6">Brak rezerwacji.</td>
+            <td colspan="7">Brak rezerwacji.</td>
         </tr>
         {% endfor %}
     </tbody>

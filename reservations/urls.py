@@ -24,4 +24,9 @@ urlpatterns = [
         views.librarian_reservations,
         name="librarian_reservations",
     ),
+    path(
+        "librarian/reservations/<int:reservation_id>/collect/",
+        views.collect_reservation_view,
+        name="collect_reservation",
+    ),
 ]

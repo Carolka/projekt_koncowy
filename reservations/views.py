@@ -11,8 +11,10 @@ from reservations.services import (
     NoAvailableCopy,
     reserve_book,
     ReservationNotCancellable,
+    ReservationNotCollectable,
     cancel_reservation,
     expire_reservations,
+    collect_reservation,
 )
 from reservations.models import Rezerwacja
 
@@ -143,6 +145,10 @@ def librarian_reservations(request):
 
     rezerwacje = rezerwacje.order_by("-utworzona_at", "-pk")
     page_obj = Paginator(rezerwacje, 20).get_page(request.GET.get("page"))
+    for rezerwacja in page_obj:
+        rezerwacja.mozna_potwierdzic_odbior = (
+            rezerwacja.status == Rezerwacja.Status.OCZEKUJACA
+        )
     parametry = request.GET.copy()
     parametry.pop("page", None)
     query_string = parametry.urlencode()
@@ -170,3 +176,27 @@ def librarian_reservations(request):
             "query_string": query_string,
         },
     )
+
+
+@require_POST
+@login_required
+@permission_required(
+    "reservations.collect_reservation",
+    raise_exception=True,
+)
+def collect_reservation_view(request, reservation_id):
+    rezerwacja = get_object_or_404(
+        Rezerwacja,
+        pk=reservation_id,
+    )
+
+    expire_reservations()
+
+    try:
+        collect_reservation(rezerwacja.pk, request.user)
+    except ReservationNotCollectable as error:
+        messages.error(request, str(error))
+    else:
+        messages.success(request, "Odbiór książki został potwierdzony.")
+
+    return redirect("reservations:librarian_reservations")

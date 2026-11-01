@@ -366,7 +366,7 @@ class LibrarianReservationsViewTests(TestCase):
             numer_inwentarzowy="LIBRARIAN-001",
             dostepny=False,
         )
-        Rezerwacja.objects.create(
+        self.rezerwacja = Rezerwacja.objects.create(
             uzytkownik=self.czytelnik,
             egzemplarz=egzemplarz,
             status=Rezerwacja.Status.OCZEKUJACA,
@@ -397,6 +397,15 @@ class LibrarianReservationsViewTests(TestCase):
         )
         self.assertContains(response, "Diuna")
         self.assertContains(response, "LIBRARIAN-001")
+        self.assertContains(response, "Potwierdź odbiór")
+        self.assertContains(
+            response,
+            reverse(
+                "reservations:collect_reservation",
+                args=[self.rezerwacja.pk],
+            ),
+        )
+        self.assertContains(response, "csrfmiddlewaretoken")
 
     def test_librarian_can_search_and_filter_reservations(self):
         self.client.force_login(self.bibliotekarka)
@@ -412,3 +421,93 @@ class LibrarianReservationsViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context["page_obj"].paginator.count, 1)
         self.assertContains(response, "LIBRARIAN-001")
+
+
+class CollectReservationViewTests(TestCase):
+    def setUp(self):
+        self.teraz = timezone.now()
+
+        self.czytelnik = get_user_model().objects.create_user(
+            username="czytelnik_odbioru",
+            password="TestoweHaslo123!",
+        )
+        self.bibliotekarka = get_user_model().objects.create_user(
+            username="bibliotekarka_odbioru",
+            password="TestoweHaslo123!",
+        )
+        uprawnienie = Permission.objects.get(
+            content_type__app_label="reservations",
+            codename="collect_reservation",
+        )
+        self.bibliotekarka.user_permissions.add(uprawnienie)
+
+        ksiazka = Ksiazka.objects.create(tytul="Diuna")
+        self.egzemplarz = Egzemplarz.objects.create(
+            ksiazka=ksiazka,
+            numer_inwentarzowy="COLLECT-VIEW-001",
+            dostepny=False,
+        )
+        self.rezerwacja = Rezerwacja.objects.create(
+            uzytkownik=self.czytelnik,
+            egzemplarz=self.egzemplarz,
+            status=Rezerwacja.Status.OCZEKUJACA,
+            utworzona_at=self.teraz,
+            termin_odbioru=self.teraz + timedelta(hours=48),
+        )
+        self.adres = reverse(
+            "reservations:collect_reservation",
+            args=[self.rezerwacja.pk],
+        )
+
+    def test_librarian_can_confirm_pickup(self):
+        self.client.force_login(self.bibliotekarka)
+
+        with patch(
+            "reservations.services.timezone.now",
+            return_value=self.teraz,
+        ):
+            response = self.client.post(self.adres)
+
+        self.assertRedirects(
+            response,
+            reverse("reservations:librarian_reservations"),
+            fetch_redirect_response=False,
+        )
+
+        self.rezerwacja.refresh_from_db()
+        self.assertEqual(self.rezerwacja.status, Rezerwacja.Status.ODEBRANA)
+        self.assertEqual(self.rezerwacja.odebrana_at, self.teraz)
+        self.assertEqual(
+            self.rezerwacja.termin_zwrotu,
+            self.teraz + timedelta(days=14),
+        )
+
+    def test_reader_without_pickup_permission_gets_forbidden(self):
+        self.client.force_login(self.czytelnik)
+        response = self.client.post(self.adres)
+        self.assertEqual(response.status_code, 403)
+
+    def test_expired_reservation_cannot_be_collected(self):
+        self.client.force_login(self.bibliotekarka)
+        self.rezerwacja.utworzona_at = self.teraz - timedelta(hours=50)
+        self.rezerwacja.termin_odbioru = self.teraz - timedelta(hours=2)
+        self.rezerwacja.save(
+            update_fields=["utworzona_at", "termin_odbioru"],
+        )
+
+        with patch(
+            "reservations.services.timezone.now",
+            return_value=self.teraz,
+        ):
+            response = self.client.post(self.adres)
+
+        self.assertRedirects(
+            response,
+            reverse("reservations:librarian_reservations"),
+            fetch_redirect_response=False,
+        )
+
+        self.rezerwacja.refresh_from_db()
+        self.egzemplarz.refresh_from_db()
+        self.assertEqual(self.rezerwacja.status, Rezerwacja.Status.WYGASLA)
+        self.assertTrue(self.egzemplarz.dostepny)
