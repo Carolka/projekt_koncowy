@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %} Rezerwacje bibliotekarki {% endblock %}
+
+{% block content %}
+<h1>Rezerwacje</h1>
+<form method="get">
+    <label for="q">Szukaj użytkownika, ksiązki lub numeru egzemplarza:</label>
+    <input type="search" id="q" name="q" value="{{ fraza }}">
+
+    <label for="status"> Status: </label>
+    <select id="status" name="status">
+        <option value="">Wszystkie statusy</option>
+        {% for opcja in statusy %}
+        <option value="{{ opcja.kod }}" {% if opcja.wybrany %}selected {% endif %}>
+            {{ opcja.nazwa }}
+        </option>
+        {% endfor %}
+    </select>
+    <button type="submit">Filtruj</button>
+</form>
+<table>
+    <thead>
+        <tr>
+            <th>Użytkownik</th>
+            <th>Książka</th>
+            <th>Numer egzemplarza</th>
+            <th>Status</th>
+            <th>Utworzono</th>
+            <th>Termin odbioru</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for rezerwacja in rezerwacje %}
+        <tr>
+            <td>{{ rezerwacja.uzytkownik.username }}</td>
+            <td>{{ rezerwacja.egzemplarz.ksiazka.tytul }}</td>
+            <td>{{ rezerwacja.egzemplarz.numer_inwentarzowy }}</td>
+            <td>{{ rezerwacja.get_status_display }}</td>
+            <td>{{ rezerwacja.utworzona_at }}</td>
+            <td>{{ rezerwacja.termin_odbioru }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="6">Brak rezerwacji.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% if page_obj.has_other_pages %}
+<nav aria-label="Stronicowanie">
+    {% if page_obj.has_previous %}
+    <a href="?{{ query_string }}page={{ page_obj.previous_page_number }}">
+        Poprzednia
+    </a>
+    {% endif %}
+    <span> Strona {{ page_obj.number }} z {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+    <a href="?{{ query_string }}page={{ page_obj.next_page_number }}">
+        Następna
+    </a>
+    {% endif %}
+</nav>
+{% endif %}
+{% endblock %}

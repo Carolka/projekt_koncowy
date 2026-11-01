@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.views.decorators.http import require_POST, require_GET
 from django.db.models import Q
 from django.utils import timezone
+from django.core.paginator import Paginator
 from catalog.models import Ksiazka
 from reservations.services import (
     AlreadyReserved,
@@ -103,5 +104,69 @@ def my_reservations(request):
             "biezace_rezerwacje": biezace_rezerwacje,
             "historyczne_rezerwacje": historyczne_rezerwacje,
             "teraz": teraz,
+        },
+    )
+
+
+@require_GET
+@login_required
+@permission_required(
+    "reservations.view_rezerwacja",
+    raise_exception=True,
+)
+def librarian_reservations(request):
+    # aktualizacja wygasłych rezerwacji przed wyświetleniem
+    expire_reservations()
+
+    fraza = request.GET.get("q", "").strip()
+    status = request.GET.get("status", "")
+
+    dozwolone_statusy = dict(Rezerwacja.Status.choices)
+    if status not in dozwolone_statusy:
+        status = ""
+
+    rezerwacje = Rezerwacja.objects.select_related(
+        "uzytkownik",
+        "egzemplarz__ksiazka",
+    )
+
+    if fraza:
+        rezerwacje = rezerwacje.filter(
+            Q(uzytkownik__username__icontains=fraza)
+            | Q(uzytkownik__first_name__icontains=fraza)
+            | Q(uzytkownik__last_name__icontains=fraza)
+            | Q(egzemplarz__ksiazka__tytul__icontains=fraza)
+            | Q(egzemplarz__numer_inwentarzowy__icontains=fraza)
+        )
+    if status:
+        rezerwacje = rezerwacje.filter(status=status)
+
+    rezerwacje = rezerwacje.order_by("-utworzona_at", "-pk")
+    page_obj = Paginator(rezerwacje, 20).get_page(request.GET.get("page"))
+    parametry = request.GET.copy()
+    parametry.pop("page", None)
+    query_string = parametry.urlencode()
+    if query_string:
+        query_string += "&"
+
+    statusy = [
+        {
+            "kod": kod,
+            "nazwa": nazwa,
+            "wybrany": kod == status,
+        }
+        for kod, nazwa in Rezerwacja.Status.choices
+    ]
+
+    return render(
+        request,
+        "reservations/librarian_reservations.html",
+        {
+            "rezerwacje": page_obj,
+            "page_obj": page_obj,
+            "fraza": fraza,
+            "wybrany_status": status,
+            "statusy": statusy,
+            "query_string": query_string,
         },
     )

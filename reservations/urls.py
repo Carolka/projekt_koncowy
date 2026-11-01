@@ -19,4 +19,9 @@ urlpatterns = [
         views.my_reservations,
         name="my_reservations",
     ),
+    path(
+        "librarian/reservations/",
+        views.librarian_reservations,
+        name="librarian_reservations",
+    ),
 ]

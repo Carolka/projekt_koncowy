@@ -1,6 +1,7 @@
 from datetime import timedelta
 from unittest.mock import patch
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Permission
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
@@ -338,3 +339,76 @@ class MyReservationsViewTests(TestCase):
         self.client.force_login(self.user)
         response = self.client.post(self.adres_panelu)
         self.assertEqual(response.status_code, 405)
+
+
+class LibrarianReservationsViewTests(TestCase):
+    def setUp(self):
+        teraz = timezone.now()
+
+        self.czytelnik = get_user_model().objects.create_user(
+            username="czytelnik_panelu",
+            password="TestoweHaslo123!",
+        )
+        self.bibliotekarka = get_user_model().objects.create_user(
+            username="bibliotekarka_panelu",
+            password="TestoweHaslo123!",
+        )
+
+        uprawnienie = Permission.objects.get(
+            content_type__app_label="reservations",
+            codename="view_rezerwacja",
+        )
+        self.bibliotekarka.user_permissions.add(uprawnienie)
+
+        ksiazka = Ksiazka.objects.create(tytul="Diuna")
+        egzemplarz = Egzemplarz.objects.create(
+            ksiazka=ksiazka,
+            numer_inwentarzowy="LIBRARIAN-001",
+            dostepny=False,
+        )
+        Rezerwacja.objects.create(
+            uzytkownik=self.czytelnik,
+            egzemplarz=egzemplarz,
+            status=Rezerwacja.Status.OCZEKUJACA,
+            utworzona_at=teraz,
+            termin_odbioru=teraz + timedelta(hours=24),
+        )
+
+        self.adres = reverse("reservations:librarian_reservations")
+
+    def test_anonymous_user_is_redirected_to_login(self):
+        response = self.client.get(self.adres)
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response["Location"].startswith(reverse("login")))
+
+    def test_user_without_permission_gets_forbidden(self):
+        self.client.force_login(self.czytelnik)
+        response = self.client.get(self.adres)
+        self.assertEqual(response.status_code, 403)
+
+    def test_librarian_can_see_reservations(self):
+        self.client.force_login(self.bibliotekarka)
+        response = self.client.get(self.adres)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(
+            response,
+            "reservations/librarian_reservations.html",
+        )
+        self.assertContains(response, "Diuna")
+        self.assertContains(response, "LIBRARIAN-001")
+
+    def test_librarian_can_search_and_filter_reservations(self):
+        self.client.force_login(self.bibliotekarka)
+
+        response = self.client.get(
+            self.adres,
+            {
+                "q": "LIBRARIAN-001",
+                "status": Rezerwacja.Status.OCZEKUJACA,
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["page_obj"].paginator.count, 1)
+        self.assertContains(response, "LIBRARIAN-001")
