@@ -45,6 +45,12 @@
                     <button type="submit">Potwierdź zwrot</button>
                 </form>
                 {% endif %}
+                {% if rezerwacja.mozna_anulowac %}
+                <form method="post" action="{% url 'reservations:librarian_cancel_reservation' rezerwacja.pk %}">
+                    {% csrf_token %}
+                    <button type="submit">Anuluj rezerwację</button>
+                </form>
+                {% endif %}
                 {% if not rezerwacja.ma_akcje %}
                 -
                 {% endif %}

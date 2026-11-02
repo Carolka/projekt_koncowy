@@ -156,9 +156,14 @@ def librarian_reservations(request):
             rezerwacja.status == Rezerwacja.Status.ODEBRANA
             and request.user.has_perm("reservations.return_reservation")
         )
+        rezerwacja.mozna_anulowac = (
+            rezerwacja.status == Rezerwacja.Status.OCZEKUJACA
+            and request.user.has_perm("reservations.cancel_reservation")
+        )
         rezerwacja.ma_akcje = (
             rezerwacja.mozna_potwierdzic_odbior
             or rezerwacja.mozna_potwierdzic_zwrot
+            or rezerwacja.mozna_anulowac
         )
     parametry = request.GET.copy()
     parametry.pop("page", None)
@@ -230,5 +235,26 @@ def return_reservation_view(request, reservation_id):
         messages.error(request, str(error))
     else:
         messages.success(request, "Zwrot książki został potwierdzony.")
+
+    return redirect("reservations:librarian_reservations")
+
+
+@require_POST
+@login_required
+@permission_required(
+    "reservations.cancel_reservation",
+    raise_exception=True,
+)
+def librarian_cancel_reservation_view(request, reservation_id):
+    rezerwacja = get_object_or_404(
+        Rezerwacja,
+        pk=reservation_id,
+    )
+    try:
+        cancel_reservation(rezerwacja.pk, request.user)
+    except ReservationNotCancellable as error:
+        messages.error(request, str(error))
+    else:
+        messages.success(request, "Rezerwacja została anulowana.")
 
     return redirect("reservations:librarian_reservations")

@@ -360,6 +360,7 @@ class LibrarianReservationsViewTests(TestCase):
                 "view_rezerwacja",
                 "collect_reservation",
                 "return_reservation",
+                "cancel_reservation",
             ],
         )
         self.bibliotekarka.user_permissions.add(*uprawnienia)
@@ -407,6 +408,7 @@ class LibrarianReservationsViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, "Potwierdź odbiór")
         self.assertNotContains(response, "Potwierdź zwrot")
+        self.assertNotContains(response, "Anuluj rezerwację")
 
         odebrana_at = timezone.now() - timedelta(hours=1)
         self.rezerwacja.status = Rezerwacja.Status.ODEBRANA
@@ -457,6 +459,63 @@ class LibrarianReservationsViewTests(TestCase):
         self.assertEqual(response.context["page_obj"].paginator.count, 1)
         self.assertContains(response, "LIBRARIAN-001")
 
+    def test_librarian_list_paginates_and_keeps_status_filter(self):
+        teraz = timezone.now()
+        for numer in range(2, 22):
+            ksiazka = Ksiazka.objects.create(
+                tytul=f"Ksiazka stronicowania {numer}",
+            )
+            egzemplarz = Egzemplarz.objects.create(
+                ksiazka=ksiazka,
+                numer_inwentarzowy=f"PAGINATION-{numer:03d}",
+                dostepny=False,
+            )
+            Rezerwacja.objects.create(
+                uzytkownik=self.czytelnik,
+                egzemplarz=egzemplarz,
+                status=Rezerwacja.Status.OCZEKUJACA,
+                utworzona_at=teraz,
+                termin_odbioru=teraz + timedelta(hours=48),
+            )
+        self.client.force_login(self.bibliotekarka)
+        parametry = {"status": Rezerwacja.Status.OCZEKUJACA}
+        pierwsza_strona = self.client.get(self.adres, parametry)
+
+        self.assertEqual(
+            pierwsza_strona.context["page_obj"].paginator.count,
+            21,
+        )
+        self.assertEqual(
+            len(pierwsza_strona.context["page_obj"].object_list),
+            20,
+        )
+
+        self.assertContains(
+            pierwsza_strona,
+            "status=OCZEKUJACA&amp;page=2",
+        )
+        druga_strona = self.client.get(
+            self.adres,
+            {**parametry, "page": 2},
+        )
+        self.assertEqual(
+            druga_strona.context["page_obj"].number,
+            2,
+        )
+
+        self.assertEqual(
+            len(druga_strona.context["page_obj"].object_list),
+            1,
+        )
+        self.assertEqual(
+            druga_strona.context["wybrany_status"],
+            Rezerwacja.Status.OCZEKUJACA,
+        )
+        self.assertContains(
+            druga_strona,
+            "status=OCZEKUJACA&amp;page=1",
+        )
+
     def test_return_button_is_shown_only_for_collected_reservation(self):
         self.client.force_login(self.bibliotekarka)
 
@@ -481,6 +540,28 @@ class LibrarianReservationsViewTests(TestCase):
                 args=[self.rezerwacja.pk],
             ),
         )
+
+    def test_cancel_button_is_shown_only_for_waiting_reservation(self):
+        self.client.force_login(self.bibliotekarka)
+        response = self.client.get(self.adres)
+        self.assertContains(response, "Anuluj rezerwację")
+        self.assertContains(
+            response,
+            reverse(
+                "reservations:librarian_cancel_reservation",
+                args=[self.rezerwacja.pk],
+            ),
+        )
+        odebrana_at = timezone.now() - timedelta(hours=1)
+        self.rezerwacja.status = Rezerwacja.Status.ODEBRANA
+        self.rezerwacja.odebrana_at = odebrana_at
+        self.rezerwacja.termin_zwrotu = odebrana_at + timedelta(days=14)
+        self.rezerwacja.save(
+            update_fields=["status", "odebrana_at", "termin_zwrotu"],
+        )
+        response = self.client.get(self.adres)
+
+        self.assertNotContains(response, "Anuluj rezerwację")
 
 
 class CollectReservationViewTests(TestCase):
@@ -659,5 +740,102 @@ class ReturnReservationViewTests(TestCase):
         self.assertEqual(
             self.rezerwacja.status,
             Rezerwacja.Status.OCZEKUJACA,
+        )
+        self.assertFalse(self.egzemplarz.dostepny)
+
+
+class LibrarianCancelReservationViewTests(TestCase):
+    def setUp(self):
+        self.teraz = timezone.now()
+
+        self.czytelnik = get_user_model().objects.create_user(
+            username="czytelnik_anulowania",
+            password="TestoweHaslo123!",
+        )
+        self.bibliotekarka = get_user_model().objects.create_user(
+            username="bibliotekarka_anulowania",
+            password="TestoweHaslo123!",
+        )
+        uprawnienie = Permission.objects.get(
+            content_type__app_label="reservations",
+            codename="cancel_reservation",
+        )
+        self.bibliotekarka.user_permissions.add(uprawnienie)
+
+        ksiazka = Ksiazka.objects.create(tytul="Diuna")
+        self.egzemplarz = Egzemplarz.objects.create(
+            ksiazka=ksiazka,
+            numer_inwentarzowy="CANCEL-VIEW-001",
+            dostepny=False,
+        )
+        self.rezerwacja = Rezerwacja.objects.create(
+            uzytkownik=self.czytelnik,
+            egzemplarz=self.egzemplarz,
+            status=Rezerwacja.Status.OCZEKUJACA,
+            utworzona_at=self.teraz,
+            termin_odbioru=self.teraz + timedelta(hours=48),
+        )
+        self.adres = reverse(
+            "reservations:librarian_cancel_reservation",
+            args=[self.rezerwacja.pk],
+        )
+
+    def test_librarian_can_cancel_waiting_reservation(self):
+        self.client.force_login(self.bibliotekarka)
+
+        with patch(
+            "reservations.services.timezone.now",
+            return_value=self.teraz,
+        ):
+            response = self.client.post(self.adres)
+        self.assertRedirects(
+            response,
+            reverse("reservations:librarian_reservations"),
+            fetch_redirect_response=False,
+        )
+        self.rezerwacja.refresh_from_db()
+        self.egzemplarz.refresh_from_db()
+
+        self.assertEqual(
+            self.rezerwacja.status,
+            Rezerwacja.Status.ANULOWANA,
+        )
+        self.assertEqual(self.rezerwacja.anulowana_at, self.teraz)
+        self.assertTrue(self.egzemplarz.dostepny)
+
+    def test_reader_without_cancel_permission_gets_forbidden(self):
+        self.client.force_login(self.czytelnik)
+        response = self.client.post(self.adres)
+        self.assertEqual(response.status_code, 403)
+        self.rezerwacja.refresh_from_db()
+        self.egzemplarz.refresh_from_db()
+
+        self.assertEqual(
+            self.rezerwacja.status,
+            Rezerwacja.Status.OCZEKUJACA,
+        )
+
+        self.assertFalse(self.egzemplarz.dostepny)
+
+    def test_collected_reservation_cannot_be_cancelled(self):
+        self.rezerwacja.status = Rezerwacja.Status.ODEBRANA
+        self.rezerwacja.odebrana_at = self.teraz
+        self.rezerwacja.termin_zwrotu = self.teraz + timedelta(days=14)
+        self.rezerwacja.save(
+            update_fields=["status", "odebrana_at", "termin_zwrotu"],
+        )
+        self.client.force_login(self.bibliotekarka)
+        response = self.client.post(self.adres)
+        self.assertRedirects(
+            response,
+            reverse("reservations:librarian_reservations"),
+            fetch_redirect_response=False,
+        )
+        self.rezerwacja.refresh_from_db()
+        self.egzemplarz.refresh_from_db()
+
+        self.assertEqual(
+            self.rezerwacja.status,
+            Rezerwacja.Status.ODEBRANA,
         )
         self.assertFalse(self.egzemplarz.dostepny)

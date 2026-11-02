@@ -34,4 +34,9 @@ urlpatterns = [
         views.return_reservation_view,
         name="return_reservation",
     ),
+    path(
+        "librarian/reservations/<int:reservation_id>/cancel/",
+        views.librarian_cancel_reservation_view,
+        name="librarian_cancel_reservation",
+    ),
 ]
