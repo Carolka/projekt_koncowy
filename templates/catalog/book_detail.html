@@ -7,7 +7,8 @@
 </p>
 <h1> {{ ksiazka.tytul }}</h1>
 {% if ksiazka.okladka %}
-<img src="{{ksiazka.okladka.url }}" alt="Okładka książki {{ ksiazka.tytul }}">
+<img src="{{ ksiazka.okladka.url }}" alt="Okładka książki {{ ksiazka.tytul }}"
+    style="width: 240px; max-width: 100%; height: auto;">
 {% endif %}
 {% if ksiazka.opis %}
 <p>{{ ksiazka.opis }}</p>

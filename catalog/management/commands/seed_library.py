@@ -5,6 +5,8 @@ from secrets import token_urlsafe
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from catalog.models import Autor, Egzemplarz, Gatunek, Ksiazka
+from pathlib import Path
+from django.core.files import File
 
 KSIAZKI_POKAZOWE = [
     {
@@ -68,6 +70,19 @@ KSIAZKI_POKAZOWE = [
         "opis": "Co dzieje się z wodą po ulewie? Książka pokazuje, jak drzewa, ogrody deszczowe i przepuszczalne chodniki pomagają miastom zatrzymać wodę.",
     },
 ]
+
+OKLADKI_POKAZOWE = {
+    "Cień nad Motławą": "cien-nad-motlawa.png",
+    "Dom przy ulicy Lipowej": "dom-przy-ulicy-lipowej.png",
+    "Mapa pod korą": "mapa-pod-kora.png",
+    "Ostatnie światło Europy": "ostatnie-swiatlo-europy.png",
+    "Nocny pociąg do Przemyśla": "nocny-pociag-do-przemysla.png",
+    "Papierowe miasto": "papierowe-miasto.png",
+    "Ścieżki, których nie ma na mapie": "sciezki-ktorych-nie-ma-na-mapie.png",
+    "Kret i księżycowy ogród": "kret-i-ksiezycowy-ogrod.png",
+    "Kawa o siódmej": "kawa-o-siodmej.png",
+    "Miasto po deszczu": "miasto-po-deszczu.png",
+}
 
 
 class Command(BaseCommand):
@@ -149,6 +164,8 @@ class Command(BaseCommand):
                 else:
                     ksiazka = pierwszy_egzemplarz.ksiazka
 
+                self.uzupelnij_okladke(ksiazka, dane["tytul"])
+
                 for numer_kopii in range(2, liczba_egzemplarzy + 1):
                     _, utworzony = Egzemplarz.objects.get_or_create(
                         numer_inwentarzowy=f"{numer_inwentarzowy}-{numer_kopii:02d}",
@@ -187,3 +204,21 @@ class Command(BaseCommand):
                 nowe_konta.append((login, haslo))
 
         return nowe_konta
+
+    def uzupelnij_okladke(self, ksiazka, tytul_pokazowy):
+        nazwa_pliku = OKLADKI_POKAZOWE.get(tytul_pokazowy)
+
+        if ksiazka.okladka or nazwa_pliku is None:
+            return
+
+        sciezka = (
+            Path(settings.BASE_DIR) / "catalog" / "demo_assets" / "covers" / nazwa_pliku
+        )
+
+        if not sciezka.is_file():
+            self.stderr.write("Brak pliku okładki: {nazwa_pliku}")
+            return
+
+        with sciezka.open("rb") as plik:
+            ksiazka.okladka.save(nazwa_pliku, File(plik), save=False)
+        ksiazka.save(update_fields=["okladka"])

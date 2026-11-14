@@ -11,7 +11,11 @@
 <ul>
     {% for ksiazka in page_obj %}
     <li>
-        <h2> {{ ksiazka.tytul }}</h2>
+        <h2>
+            <a href="{% url 'catalog:book_detail' ksiazka.pk %}">
+                {{ ksiazka.tytul }}
+            </a>
+        </h2>
         <p> Autorzy:
             {% for autor in ksiazka.autorzy.all %}
             {{autor}}{% if not forloop.last %}, {% endif %}
