@@ -293,6 +293,11 @@ html[data-theme="dark"] {
     gap: .65rem 1rem;
 }
 
+.reservation-status-stack {
+    display: inline-block;
+    text-align: center;
+}
+
 .reservation-status-badge {
     display: inline-block;
     padding: .25rem .5rem;

@@ -107,7 +107,9 @@ class RezerwacjaAdmin(admin.ModelAdmin):
             else rezerwacja.get_status_display()
         )
         return format_html(
-            '<span class="reservation-status-badge reservation-status-badge--{}">{}</span>{}',
+            '<span class="reservation-status-stack">'
+            '<span class="reservation-status-badge reservation-status-badge--{}">{}</span>{}'
+            '</span>',
             rezerwacja.status.lower(),
             etykieta,
             format_html('<small class="reservation-status-overdue">{}</small>', "Po terminie")
