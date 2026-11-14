@@ -2,16 +2,22 @@
 {% load static %}
 
 {% block title %}
-{{title}} | Katalog biblioteczny
+{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | {{ site_title }}
 {% endblock %}
 
 {% block branding %}
-<h1 id="site-name">
-    <a href="{% url 'admin:index' %}">Katalog biblioteczny</a>
-</h1>
+<div id="site-name">
+    <a href="{% url 'admin:index' %}">
+        {% include "includes/book_icon.html" %}
+        {{ site_header }}
+    </a>
+</div>
+{% if user.is_anonymous %}
+    {% include "admin/color_theme_toggle.html" %}
+{% endif %}
 {% endblock %}
 
 {% block extrastyle %}
 {{ block.super }}
-<link rel="stylesheet" href="{% static 'css/admin.css' %}">
+<link rel="stylesheet" href="{% static 'css/admin.css' %}?v=2">
 {% endblock %}

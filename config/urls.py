@@ -21,6 +21,10 @@ from django.conf import settings
 from django.conf.urls.static import static
 from accounts.views import LibraryLoginView
 
+admin.site.site_header = "Biblioteka"
+admin.site.site_title = "Biblioteka"
+admin.site.index_title = "Panel biblioteki"
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("accounts/login/", LibraryLoginView.as_view(), name="login"),
