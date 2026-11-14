@@ -1,5 +1,7 @@
 from django.contrib import admin, messages
 from django.core.exceptions import PermissionDenied
+from django.utils import formats, timezone
+from django.utils.html import format_html
 
 # Register your models here.
 from .models import Rezerwacja
@@ -15,19 +17,22 @@ from .services import (
 
 class RezerwacjaAdmin(admin.ModelAdmin):
     list_display = (
-        "uzytkownik",
-        "egzemplarz",
+        "czytelnik",
+        "ksiazka",
+        "sygnatura",
         "status",
-        "utworzona_at",
-        "termin_odbioru",
-        "odebrana_at",
-        "termin_zwrotu",
-        "anulowana_at",
-        "zwrocona_at",
+        "data_utworzenia",
+        "data_terminu_odbioru",
+        "data_odbioru",
+        "data_terminu_zwrotu",
+        "data_anulowania",
+        "data_zwrotu",
     )
 
     search_fields = (
         "uzytkownik__username",
+        "uzytkownik__first_name",
+        "uzytkownik__last_name",
         "egzemplarz__ksiazka__tytul",
         "egzemplarz__numer_inwentarzowy",
     )
@@ -53,6 +58,62 @@ class RezerwacjaAdmin(admin.ModelAdmin):
         "potwierdz_odbior",
         "potwierdz_zwrot",
     )
+
+    @admin.display(description="Użytkownik", ordering="uzytkownik__last_name")
+    def czytelnik(self, rezerwacja):
+        uzytkownik = rezerwacja.uzytkownik
+        nazwa = uzytkownik.get_full_name() or uzytkownik.get_username()
+        numer_karty = f"BK{uzytkownik.pk:05d}"
+        return format_html(
+            "<strong>{}</strong><br><small>Nr karty: {}</small>", nazwa, numer_karty
+        )
+
+    @admin.display(description="Książka", ordering="egzemplarz__ksiazka__tytul")
+    def ksiazka(self, rezerwacja):
+        ksiazka = rezerwacja.egzemplarz.ksiazka
+        autorzy = ", ".join(str(autor) for autor in ksiazka.autorzy.all())
+        if autorzy:
+            return format_html(
+                "<strong>{}</strong><br><small>{}</small>", ksiazka.tytul, autorzy
+            )
+        return ksiazka.tytul
+
+    @admin.display(description="Sygnatura", ordering="egzemplarz__numer_inwentarzowy")
+    def sygnatura(self, rezerwacja):
+        return rezerwacja.egzemplarz.numer_inwentarzowy
+
+    @staticmethod
+    def _krotka_data(wartosc):
+        if wartosc is None:
+            return None
+        return formats.date_format(timezone.localtime(wartosc), "d.m.Y H:i")
+
+    @admin.display(description="Data utworzenia", ordering="utworzona_at")
+    def data_utworzenia(self, rezerwacja):
+        return self._krotka_data(rezerwacja.utworzona_at)
+
+    @admin.display(description="Termin odbioru", ordering="termin_odbioru")
+    def data_terminu_odbioru(self, rezerwacja):
+        return self._krotka_data(rezerwacja.termin_odbioru)
+
+    @admin.display(description="Data odbioru", ordering="odebrana_at")
+    def data_odbioru(self, rezerwacja):
+        return self._krotka_data(rezerwacja.odebrana_at)
+
+    @admin.display(description="Termin zwrotu", ordering="termin_zwrotu")
+    def data_terminu_zwrotu(self, rezerwacja):
+        return self._krotka_data(rezerwacja.termin_zwrotu)
+
+    @admin.display(description="Data anulowania", ordering="anulowana_at")
+    def data_anulowania(self, rezerwacja):
+        return self._krotka_data(rezerwacja.anulowana_at)
+
+    @admin.display(description="Data zwrotu", ordering="zwrocona_at")
+    def data_zwrotu(self, rezerwacja):
+        return self._krotka_data(rezerwacja.zwrocona_at)
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).prefetch_related("egzemplarz__ksiazka__autorzy")
 
     def changelist_view(self, request, extra_context=None):
         return super().changelist_view(

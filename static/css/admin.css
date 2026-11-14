@@ -270,3 +270,25 @@ html[data-theme="dark"] {
     outline: 2px solid #e0ead6;
     outline-offset: -2px;
 }
+
+.app-reservations.model-rezerwacja.change-list #result_list .field-ksiazka {
+    min-width: 12rem;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.app-reservations.model-rezerwacja.change-list #result_list th[class*="column-data_"],
+.app-reservations.model-rezerwacja.change-list #result_list td[class*="field-data_"] {
+    box-sizing: border-box;
+    width: 10.5rem;
+    min-width: 10.5rem;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+@media (min-width: 768px) {
+    .app-reservations.model-rezerwacja.change-list #changelist-filter {
+        flex: 0 0 10rem;
+        margin-inline-start: .75rem;
+    }
+}
