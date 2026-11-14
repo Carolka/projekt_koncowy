@@ -9,6 +9,14 @@
 </a>
 {% endblock %}
 
+{% block account_navigation %}
+{% if pokaz_panel_admina %}
+<a href="{% url 'admin:index' %}">Panel admina</a>
+{% else %}
+{{ block.super }}
+{% endif %}
+{% endblock %}
+
 {% block content %}
 <div class="catalog">
 <h1>Katalog książek</h1>
