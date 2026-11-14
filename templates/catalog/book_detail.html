@@ -65,7 +65,9 @@
                     <strong>{{ liczba_dostepnych_egzemplarzy }}</strong>
                     z {{ liczba_aktywnych_egzemplarzy }} aktywnych
                 </p>
-                {% if ma_biezaca_rezerwacje %}
+                {% if konto_bibliotekarki %}
+                    <p>Aby zarezerwować książkę dla siebie, zaloguj się na konto czytelnika.</p>
+                {% elif ma_biezaca_rezerwacje %}
                     <button class="book-action" type="button" disabled>Już zarezerwowano</button>
                     <p><a href="{% url 'reservations:my_reservations' %}">Przejdź do moich rezerwacji</a></p>
                 {% elif liczba_dostepnych_egzemplarzy > 0 %}

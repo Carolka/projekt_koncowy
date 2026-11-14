@@ -55,12 +55,6 @@ def book_list(request):
     if query_string:
         query_string += "&"
 
-    pokaz_panel_admina = (
-        request.user.is_active
-        and request.user.is_staff
-        and request.user.groups.filter(name="Bibliotekarki").exists()
-    )
-
     return render(
         request,
         "catalog/book_list.html",
@@ -68,7 +62,6 @@ def book_list(request):
             "form": form,
             "page_obj": page_obj,
             "query_string": query_string,
-            "pokaz_panel_admina": pokaz_panel_admina,
         },
     )
 

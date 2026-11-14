@@ -3,6 +3,7 @@ from unittest.mock import patch
 from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group, Permission
 from django.utils import timezone
 from catalog.forms import BookSearchForm
 from catalog.models import Gatunek, Autor, Egzemplarz, Ksiazka
@@ -250,6 +251,32 @@ class BookDetailViewTests(TestCase):
     def test_detail_page_returns_404_for_unknown_book(self):
         response = self.client.get(reverse("catalog:book_detail", args=[999999]))
         self.assertEqual(response.status_code, 404)
+
+    def test_librarian_has_staff_navigation_and_cannot_reserve_from_book_detail(self):
+        bibliotekarka = get_user_model().objects.create_user(
+            username="bibliotekarka_katalogu", is_staff=True,
+        )
+        bibliotekarka.groups.add(Group.objects.create(name="Bibliotekarki"))
+        bibliotekarka.user_permissions.add(
+            Permission.objects.get(
+                content_type__app_label="reservations", codename="view_rezerwacja",
+            )
+        )
+        self.client.force_login(bibliotekarka)
+
+        for adres in [
+            reverse("catalog:book_list"),
+            reverse("catalog:book_detail", args=[self.ksiazka.pk]),
+        ]:
+            with self.subTest(adres=adres):
+                response = self.client.get(adres)
+                self.assertContains(
+                    response, reverse("admin:reservations_rezerwacja_changelist")
+                )
+                self.assertNotContains(response, "Moje rezerwacje")
+
+        self.assertNotContains(response, reverse("reservations:reserve_book", args=[self.ksiazka.pk]))
+        self.assertContains(response, "zaloguj się na konto czytelnika")
 
     def test_detail_expires_overdue_reservation_before_showing_availability(self):
         teraz = timezone.now()

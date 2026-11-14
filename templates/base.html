@@ -14,9 +14,17 @@
         <nav>
             {% if user.is_authenticated %}
             <span>Zalogowano jako {{user.username}}</span>
-            {% block account_navigation %}
+            {% if konto_bibliotekarki %}
+                {% if user.is_staff and user.is_active %}
+                    {% if perms.reservations.view_rezerwacja %}
+                    <a href="{% url 'admin:reservations_rezerwacja_changelist' %}">Rezerwacje</a>
+                    {% else %}
+                    <a href="{% url 'admin:index' %}">Panel admina</a>
+                    {% endif %}
+                {% endif %}
+            {% else %}
             <a href="{% url 'reservations:my_reservations' %}">Moje rezerwacje</a>
-            {% endblock %}
+            {% endif %}
             <form method="post" action="{% url 'logout' %}">
                 {% csrf_token %}
                 <input type="hidden" name="next" value="{% url 'catalog:book_list' %}">
