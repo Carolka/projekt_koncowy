@@ -1,0 +1,52 @@
+{% load i18n %}
+<button type="button" class="sticky toggle-nav-sidebar" id="toggle-nav-sidebar"
+        aria-label="{% translate 'Toggle navigation' %}" aria-controls="nav-sidebar"></button>
+<nav class="sticky" id="nav-sidebar" aria-labelledby="admin-sidebar-heading">
+    <div class="admin-sidebar-inner">
+        <h2 id="admin-sidebar-heading">Administracja</h2>
+        <input type="search" id="nav-filter"
+               placeholder="{% translate 'Start typing to filter…' %}"
+               aria-label="{% translate 'Filter navigation items' %}">
+
+        {% if available_apps %}
+        <table class="admin-sidebar-menu">
+            <tbody>
+                {% for app in available_apps %}
+                    {% for model in app.models %}
+                    {% with model_name=model.object_name|lower %}
+                    <tr{% if model.admin_url and model.admin_url in request.path|urlencode %} class="current-model"{% endif %}>
+                        <th scope="row" id="admin-sidebar-{{ app.app_label }}-{{ model_name }}">
+                            {% if model.admin_url %}
+                            {% include "admin/sidebar_icon.html" %}
+                            <a href="{{ model.admin_url }}"{% if model.admin_url in request.path|urlencode %} aria-current="{% if model.admin_url == request.path|urlencode %}page{% else %}location{% endif %}"{% endif %}>{{ model.name }}</a>
+                            {% else %}
+                            <span>{{ model.name }}</span>
+                            {% endif %}
+                        </th>
+                        <td>
+                            {% if model.add_url %}
+                            <a class="admin-sidebar-add" href="{{ model.add_url }}"
+                               aria-describedby="admin-sidebar-{{ app.app_label }}-{{ model_name }}">
+                                <span aria-hidden="true">+</span> {% translate "Add" %}
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endwith %}
+                    {% endfor %}
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+
+        <form class="admin-sidebar-logout" method="post" action="{% url 'admin:logout' %}">
+            {% csrf_token %}
+            <button type="submit">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                    <path d="M10 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h5m-1-8h12m-4-4 4 4-4 4"/>
+                </svg>
+                {% translate "Log out" %}
+            </button>
+        </form>
+    </div>
+</nav>

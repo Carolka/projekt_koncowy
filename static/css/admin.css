@@ -1,6 +1,7 @@
 :root,
 html[data-theme="light"],
 html[data-theme="dark"] {
+    --library-sidebar-gutter: .75rem;
     --primary: #47613d;
     --secondary: #104736;
     --accent: #f5f1e7;
@@ -56,4 +57,216 @@ html[data-theme="dark"] {
 
 .dashboard #content-main .module {
     border: 1px solid var(--border-color);
+}
+
+/* Boczne menu Django admina. */
+#nav-sidebar {
+    background: var(--header-bg);
+    border-inline-end: 0;
+    color: #f5f1e7;
+}
+
+@media (min-width: 768px) {
+    #container:has(> #main > #nav-sidebar) {
+        --admin-sidebar-width: 0px;
+        display: grid;
+        grid-template-columns: var(--admin-sidebar-width) 32px minmax(0, 1fr);
+        grid-template-rows: auto auto 1fr auto;
+        min-height: 100%;
+        height: auto;
+    }
+
+    #container:has(> #main.shifted > #nav-sidebar) {
+        --admin-sidebar-width: 275px;
+    }
+
+    #container:has(> #main > #nav-sidebar) > #main {
+        display: contents;
+    }
+
+    #container:has(> #main > #nav-sidebar) > #header {
+        grid-area: 1 / 1 / 2 / -1;
+        padding-inline-start: var(--library-sidebar-gutter);
+        align-items: flex-start;
+    }
+
+    #container:has(> #main > #nav-sidebar) > nav {
+        grid-area: 2 / 3 / 3 / -1;
+    }
+
+    #container:has(> #main > #nav-sidebar) > nav > .breadcrumbs,
+    #main:has(> #nav-sidebar) > .content > #content {
+        padding-inline-start: .75rem;
+    }
+
+    #container:has(> #main > #nav-sidebar) > #footer {
+        grid-area: 4 / 1 / 5 / -1;
+    }
+
+    #main > #nav-sidebar {
+        grid-area: 2 / 1 / 4 / 2;
+        box-sizing: border-box;
+        left: auto;
+        right: auto;
+        margin: 0;
+        border-top: 0;
+    }
+
+    #main > #toggle-nav-sidebar {
+        grid-area: 2 / 2 / 4 / 3;
+        align-self: start;
+        width: 32px;
+        height: 32px;
+        margin: 4px 0;
+        inset-inline-start: auto;
+        border: 0;
+        border-radius: 0 .4rem .4rem 0;
+        background: var(--header-bg);
+        color: #f5f1e7;
+    }
+
+    #main > #toggle-nav-sidebar:hover {
+        background: var(--primary);
+    }
+
+    #main > #toggle-nav-sidebar:focus-visible {
+        outline: 2px solid var(--link-fg);
+        outline-offset: 2px;
+    }
+
+    #main > #nav-sidebar ~ .content,
+    #main.shifted > #nav-sidebar ~ .content {
+        grid-area: 3 / 3 / 4 / -1;
+        min-width: 0;
+        max-width: 100%;
+    }
+}
+
+.admin-sidebar-inner {
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    min-height: 100%;
+    padding: .9rem var(--library-sidebar-gutter);
+}
+
+#admin-sidebar-heading {
+    margin: 0 0 .65rem;
+    padding-inline: .55rem;
+    color: #e0ead6;
+    font: 700 .8125rem/1.4 var(--font-family-primary);
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+
+#nav-sidebar #nav-filter {
+    margin: 0 0 .75rem;
+    padding: .5rem .6rem;
+    border: 1px solid #799084;
+    border-radius: .5rem;
+    background: #20483b;
+    color: #fffefd;
+}
+
+#nav-sidebar #nav-filter::placeholder {
+    color: #e0e8dd;
+}
+
+#nav-sidebar #nav-filter.no-results {
+    background: #663932;
+}
+
+#nav-sidebar .admin-sidebar-menu {
+    border-collapse: separate;
+    border-spacing: 0 .2rem;
+}
+
+#nav-sidebar .admin-sidebar-menu tr {
+    background: transparent;
+}
+
+#nav-sidebar .admin-sidebar-menu tr:hover,
+#nav-sidebar .admin-sidebar-menu .current-model {
+    background: #47613d;
+}
+
+.admin-sidebar-menu th,
+.admin-sidebar-menu td {
+    padding: 0;
+    border: 0;
+    vertical-align: middle;
+}
+
+.admin-sidebar-menu th {
+    width: 100%;
+    position: relative;
+    border-start-start-radius: .5rem;
+    border-end-start-radius: .5rem;
+    overflow-wrap: anywhere;
+}
+
+.admin-sidebar-menu td {
+    border-start-end-radius: .5rem;
+    border-end-end-radius: .5rem;
+    white-space: nowrap;
+}
+
+#nav-sidebar .admin-sidebar-menu a,
+.admin-sidebar-menu th > span,
+.admin-sidebar-logout button {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    padding: .65rem .55rem;
+    color: #fffefd;
+    font-size: .875rem;
+    font-weight: 650;
+}
+
+#nav-sidebar .admin-sidebar-add {
+    gap: .25rem;
+    color: #e0ead6;
+    font-size: .8125rem;
+}
+
+.admin-sidebar-menu svg,
+.admin-sidebar-logout svg {
+    width: 1.15rem;
+    height: 1.15rem;
+    flex-shrink: 0;
+}
+
+.admin-sidebar-menu th > svg {
+    position: absolute;
+    inset-inline-start: .55rem;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+#nav-sidebar .admin-sidebar-menu th > a {
+    padding-inline-start: 2.3rem;
+}
+
+.admin-sidebar-logout {
+    margin-top: auto;
+    padding-top: 1rem;
+}
+
+.admin-sidebar-logout button {
+    width: 100%;
+    border: 0;
+    border-top: 1px solid #799084;
+    background: transparent;
+    text-align: start;
+    cursor: pointer;
+}
+
+.admin-sidebar-logout button:hover {
+    text-decoration: underline;
+}
+
+#nav-sidebar :focus-visible {
+    outline: 2px solid #e0ead6;
+    outline-offset: -2px;
 }

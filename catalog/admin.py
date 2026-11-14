@@ -19,7 +19,9 @@ class AutorAdmin(admin.ModelAdmin):
     def render_change_form(
         self, request, context, add=False, change=False, form_url="", obj=None
     ):
-        if change:
+        if add:
+            context["title"] = "Dodaj autora"
+        elif change:
             context["title"] = (
                 "Zmień autora"
                 if self.has_change_permission(request, obj)
@@ -58,13 +60,20 @@ class KsiazkaAdmin(admin.ModelAdmin):
     filter_horizontal = ("autorzy", "gatunki")
     inlines = (EgzemplarzInline,)
 
+    class Media:
+        js = ("js/admin-author-selector.js",)
+
     def changelist_view(self, request, extra_context=None):
         return super().changelist_view(
             request, {"title": "Książki", **(extra_context or {})}
         )
 
-    def render_change_form(self, request, context, add=False, change=False, form_url="", obj=None):
-        if change:
+    def render_change_form(
+        self, request, context, add=False, change=False, form_url="", obj=None
+    ):
+        if add:
+            context["title"] = "Dodaj książkę"
+        elif change:
             context["title"] = (
                 "Zmień książkę"
                 if self.has_change_permission(request, obj)
