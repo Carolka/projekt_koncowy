@@ -7,6 +7,17 @@ from django.db import transaction
 from catalog.models import Autor, Egzemplarz, Gatunek, Ksiazka
 from pathlib import Path
 from django.core.files import File
+from django.core.files.base import ContentFile
+from django.utils.text import slugify
+from PIL import Image, ImageDraw, ImageFont
+
+from hashlib import sha256
+from io import BytesIO
+import re
+from textwrap import fill
+
+from reservations.models import Rezerwacja
+from reservations.services import AlreadyReserved, NoAvailableCopy, reserve_book
 
 KSIAZKI_POKAZOWE = [
     {
@@ -185,8 +196,6 @@ class Command(BaseCommand):
                 else:
                     ksiazka = pierwszy_egzemplarz.ksiazka
 
-                self.uzupelnij_okladke(ksiazka, dane["tytul"])
-
                 for numer_kopii in range(2, liczba_egzemplarzy + 1):
                     _, utworzony = Egzemplarz.objects.get_or_create(
                         numer_inwentarzowy=f"{numer_inwentarzowy}-{numer_kopii:02d}",
@@ -201,11 +210,26 @@ class Command(BaseCommand):
             )
         )
 
+        if liczba_ksiazek:
+            ksiazki_demo = (
+                Ksiazka.objects.filter(
+                    egzemplarze__numer_inwentarzowy__regex=r"^DEMO-KS-[0-9]+$",
+                )
+                .distinct()
+                .prefetch_related("autorzy")
+            )
+            for ksiazka in ksiazki_demo:
+                self.uzupelnij_okladke(ksiazka)
+                self.uzupelnij_portrety(ksiazka)
+
         nowe_konta = self.utworz_konta_demo(liczba_uzytkownikow)
         self.stdout.write(f"Dodano kont demonstracyjnych: {len(nowe_konta)}.")
 
         for login, haslo in nowe_konta:
             self.stdout.write(f"Login: {login} | Hasło: {haslo}")
+
+        if liczba_ksiazek > 0 and liczba_uzytkownikow > 0:
+            self.utworz_rezerwacje_demo()
 
     def utworz_konta_demo(self, liczba_uzytkownikow):
         User = get_user_model()
@@ -226,10 +250,18 @@ class Command(BaseCommand):
 
         return nowe_konta
 
-    def uzupelnij_okladke(self, ksiazka, tytul_pokazowy):
-        nazwa_pliku = OKLADKI_POKAZOWE.get(tytul_pokazowy)
+    def uzupelnij_okladke(self, ksiazka):
+        poprzednia_okladka = f"okladki/demo-ksiazka-{ksiazka.pk}"
+        stara_generowana = re.fullmatch(
+            rf"{re.escape(poprzednia_okladka)}(?:_[A-Za-z0-9]{{7}})?\.png",
+            ksiazka.okladka.name or "",
+        )
+        if ksiazka.okladka and not stara_generowana:
+            return
 
-        if ksiazka.okladka or nazwa_pliku is None:
+        nazwa_pliku = OKLADKI_POKAZOWE.get(ksiazka.tytul)
+        if nazwa_pliku is None:
+            self.wygeneruj_okladke(ksiazka)
             return
 
         sciezka = (
@@ -238,8 +270,100 @@ class Command(BaseCommand):
 
         if not sciezka.is_file():
             self.stderr.write(f"Brak pliku okładki: {nazwa_pliku}")
+            self.wygeneruj_okladke(ksiazka)
             return
 
         with sciezka.open("rb") as plik:
             ksiazka.okladka.save(nazwa_pliku, File(plik), save=False)
         ksiazka.save(update_fields=["okladka"])
+
+    def uzupelnij_portrety(self, ksiazka):
+        autorzy_pokazowi = {dane["autor"] for dane in KSIAZKI_POKAZOWE}
+        folder = Path(settings.BASE_DIR) / "catalog" / "demo_assets" / "authors"
+
+        for autor in ksiazka.autorzy.all():
+            nazwa = str(autor)
+            if autor.zdjecie or nazwa not in autorzy_pokazowi:
+                continue
+
+            nazwa_pliku = slugify(nazwa.replace("ł", "l").replace("Ł", "L")) + ".png"
+            sciezka = folder / nazwa_pliku
+            if sciezka.is_file():
+                with sciezka.open("rb") as plik:
+                    autor.zdjecie.save(nazwa_pliku, File(plik), save=False)
+                autor.save(update_fields=["zdjecie"])
+
+    def utworz_rezerwacje_demo(self):
+        uzytkownik = get_user_model().objects.get(username="demo_czytelnik_001")
+        egzemplarz = Egzemplarz.objects.get(numer_inwentarzowy="DEMO-KS-001")
+        if Rezerwacja.objects.filter(
+            uzytkownik=uzytkownik,
+            egzemplarz__ksiazka_id=egzemplarz.ksiazka_id,
+        ).exists():
+            self.stdout.write("Rezerwacja pokazowa już istnieje w bazie.")
+            return
+
+        try:
+            rezerwacja = reserve_book(uzytkownik, egzemplarz.ksiazka_id)
+        except (AlreadyReserved, NoAvailableCopy) as blad:
+            self.stdout.write(f"Pominięto rezerwację pokazową: {blad}")
+        else:
+            self.stdout.write(f"Dodano rezerwację pokazową #{rezerwacja.pk}.")
+
+    def font_okladki(self, rozmiar):
+        for nazwa in (
+            "DejaVuSans.ttf",
+            "Arial.ttf",
+            "/System/Library/Fonts/Supplemental/Arial.ttf",
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        ):
+            try:
+                return ImageFont.truetype(nazwa, rozmiar)
+            except OSError:
+                continue
+        raise CommandError(
+            "Do generowania okładek zainstaluj czcionkę DejaVu Sans lub Arial."
+        )
+
+    def wygeneruj_okladke(self, ksiazka):
+        paleta = ["#164638", "#253657", "#623548", "#704533"]
+        indeks = sha256(ksiazka.tytul.encode("utf-8")).digest()[0] % len(paleta)
+
+        obraz = Image.new("RGB", (480, 720), paleta[indeks])
+        rysunek = ImageDraw.Draw(obraz)
+        krem = "#f5f1e7"
+
+        rysunek.rectangle((24, 24, 455, 695), outline=krem, width=2)
+        rysunek.line((65, 365, 415, 365), fill=krem, width=2)
+
+        tytul = fill(ksiazka.tytul, width=18)
+        autorzy = ", ".join(str(autor) for autor in ksiazka.autorzy.all())
+
+        sciezka_fontu = "/System/Library/Fonts/Supplemental/Arial.ttf"
+        font_tytulu = ImageFont.truetype(sciezka_fontu, 62)
+        font_autora = ImageFont.truetype(sciezka_fontu, 30)
+
+        rysunek.multiline_text(
+            (240, 190),
+            tytul,
+            font=font_tytulu,
+            fill=krem,
+            anchor="mm",
+            align="center",
+            spacing=8,
+        )
+        rysunek.multiline_text(
+            (240, 425),
+            fill(autorzy, width=28),
+            font=font_autora,
+            fill=krem,
+            anchor="mm",
+            align="center",
+        )
+
+        with BytesIO() as bufor:
+            obraz.save(bufor, format="PNG")
+            ksiazka.okladka.save(
+                f"demo-ksiazka-pl-{ksiazka.pk}.png",
+                ContentFile(bufor.getvalue()),
+            )

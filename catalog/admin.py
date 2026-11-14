@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils.html import format_html
 
 from .models import Autor, Egzemplarz, Gatunek, Ksiazka
 
@@ -10,6 +11,23 @@ class AutorAdmin(admin.ModelAdmin):
     list_display = ("imie", "nazwisko")
     search_fields = ("imie", "nazwisko")
     ordering = ("nazwisko", "imie")
+
+    def get_fields(self, request, obj=None):
+        pola = ("imie", "nazwisko", "zdjecie")
+        if obj and obj.zdjecie:
+            return (*pola, "podglad_zdjecia")
+        return pola
+
+    readonly_fields = ("podglad_zdjecia",)
+
+    @admin.display(description="Podgląd zdjęcia")
+    def podglad_zdjecia(self, autor):
+        return format_html(
+            '<img src="{}" alt="Portret: {}" '
+            'style="width:120px;max-width:100%;height:auto;border-radius:.5rem;">',
+            autor.zdjecie.url,
+            autor,
+        )
 
     def changelist_view(self, request, extra_context=None):
         return super().changelist_view(
