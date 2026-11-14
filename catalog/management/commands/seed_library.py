@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from faker import Faker
+from secrets import token_urlsafe
+from django.contrib.auth import get_user_model
 from django.db import transaction
 from catalog.models import Autor, Egzemplarz, Gatunek, Ksiazka
 
@@ -74,6 +76,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("--books", type=int, default=10)
         parser.add_argument("--seed", type=int, default=42)
+        parser.add_argument("--users", type=int, default=0)
 
     def handle(self, *args, **options):
         if not settings.DEBUG:
@@ -82,6 +85,10 @@ class Command(BaseCommand):
         liczba_ksiazek = options["books"]
         if liczba_ksiazek < 0:
             raise CommandError("--books nie może być ujemne.")
+
+        liczba_uzytkownikow = options["users"]
+        if liczba_uzytkownikow < 0:
+            raise CommandError("--users nie może być ujemne.")
 
         faker = Faker("pl_PL")
         faker.seed_instance(options["seed"])
@@ -155,3 +162,28 @@ class Command(BaseCommand):
                 f"dodano egzemplarzy: {dodane_egzemplarze}."
             )
         )
+
+        nowe_konta = self.utworz_konta_demo(liczba_uzytkownikow)
+        self.stdout.write(f"Dodano kont demonstracyjnych: {len(nowe_konta)}.")
+
+        for login, haslo in nowe_konta:
+            self.stdout.write(f"Login: {login} | Hasło: {haslo}")
+
+    def utworz_konta_demo(self, liczba_uzytkownikow):
+        User = get_user_model()
+        nowe_konta = []
+
+        with transaction.atomic():
+            for numer in range(1, liczba_uzytkownikow + 1):
+                login = f"demo_czytelnik_{numer:03d}"
+                uzytkownik, utworzony = User.objects.get_or_create(
+                    username=login,
+                )
+                if not utworzony:
+                    continue
+                haslo = token_urlsafe(16)
+                uzytkownik.set_password(haslo)
+                uzytkownik.save(update_fields=["password"])
+                nowe_konta.append((login, haslo))
+
+        return nowe_konta
