@@ -293,6 +293,37 @@ html[data-theme="dark"] {
     gap: .65rem 1rem;
 }
 
+.reservation-status-badge {
+    display: inline-block;
+    padding: .25rem .5rem;
+    border-radius: .4rem;
+    background: #e3e4df;
+    color: #242923;
+    font-weight: 600;
+}
+
+.reservation-status-badge--oczekujaca {
+    background: #fbe8b2;
+    color: #392b0b;
+}
+
+.reservation-status-badge--odebrana {
+    background: #d3ebbe;
+    color: #203714;
+}
+
+.reservation-status-badge--anulowana {
+    background: #f5ded8;
+    color: #742c24;
+}
+
+.reservation-status-overdue {
+    display: block;
+    margin-top: .25rem;
+    color: light-dark(#a02620, #ffaaa0);
+    font-weight: 600;
+}
+
 .reservation-filter-panel {
     margin-bottom: .75rem;
     padding: .75rem 1rem;

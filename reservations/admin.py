@@ -30,7 +30,7 @@ class RezerwacjaAdmin(admin.ModelAdmin):
         "czytelnik",
         "ksiazka",
         "sygnatura",
-        "status",
+        "etykieta_statusu",
         "data_utworzenia",
         "data_terminu_odbioru",
         "data_odbioru",
@@ -98,6 +98,21 @@ class RezerwacjaAdmin(admin.ModelAdmin):
     @admin.display(description="Sygnatura", ordering="egzemplarz__numer_inwentarzowy")
     def sygnatura(self, rezerwacja):
         return rezerwacja.egzemplarz.numer_inwentarzowy
+
+    @admin.display(description="Status", ordering="status")
+    def etykieta_statusu(self, rezerwacja):
+        etykieta = (
+            "Zwrócona"
+            if rezerwacja.status == Rezerwacja.Status.ZAKONCZONA
+            else rezerwacja.get_status_display()
+        )
+        return format_html(
+            '<span class="reservation-status-badge reservation-status-badge--{}">{}</span>{}',
+            rezerwacja.status.lower(),
+            etykieta,
+            format_html('<small class="reservation-status-overdue">{}</small>', "Po terminie")
+            if rezerwacja.po_terminie else "",
+        )
 
     @staticmethod
     def _krotka_data(wartosc):
