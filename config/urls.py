@@ -29,7 +29,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("accounts/login/", LibraryLoginView.as_view(), name="login"),
     path("accounts/", include("accounts.urls")),
-    # udostępnienie wbudowanych adresow Django do logowania i wylogowania
+    # Udostępnienie wbudowanych adresów Django do logowania i wylogowania.
     path("accounts/", include("django.contrib.auth.urls")),
     path("", include("reservations.urls")),
     path("", include("catalog.urls")),

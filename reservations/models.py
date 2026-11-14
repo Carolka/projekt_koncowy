@@ -111,7 +111,7 @@ class Rezerwacja(models.Model):
 
     def __str__(self):
         return (
-            f"Rezerwacja #{self.pk} -"
+            f"Rezerwacja #{self.pk} – "
             f"{self.egzemplarz} = {self.get_status_display()}"
         )
 

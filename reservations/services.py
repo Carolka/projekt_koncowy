@@ -10,7 +10,7 @@ from reservations.models import Rezerwacja
 
 # własne wyjątki
 class AlreadyReserved(Exception):
-    """Użytkownik ma już bieżącą rezerwacje tej książki."""
+    """Użytkownik ma już bieżącą rezerwację tej książki."""
 
 
 class NoAvailableCopy(Exception):
@@ -100,7 +100,7 @@ def reserve_book(user, book_id):
             "Aby zarezerwować książkę dla siebie, zaloguj się na konto czytelnika."
         )
     with transaction.atomic():
-        # ksiazka, egzemplarze, rezerwacje
+        # Kolejność blokad: książka, egzemplarze, rezerwacje.
         ksiazka = Ksiazka.objects.select_for_update().get(pk=book_id)
 
         egzemplarze = list(
@@ -120,11 +120,11 @@ def reserve_book(user, book_id):
             ],
         )
 
-        # filtrujemy po uzytkowniku - sprawdzamy czy juz zarezerwowal ta ksiazke
+        # Sprawdzamy, czy użytkownik już zarezerwował tę książkę.
         if biezace_rezerwacje.filter(uzytkownik=user).exists():
             raise AlreadyReserved("Masz już tę książkę zarezerwowaną lub odebraną.")
 
-        # pobranie z aktywnych rezerwacji id egzemplarzy - do wykluczenia tych już zajetych
+        # Pobieramy identyfikatory zajętych egzemplarzy, aby je wykluczyć.
         zajete_egzemplarz_ids = biezace_rezerwacje.values_list(
             "egzemplarz_id", flat=True
         )
@@ -182,7 +182,7 @@ def cancel_reservation(reservation_id, user):
             pk=reservation_id,
         )
 
-        # sprawdzamy czy użytkownik chce anulować swoją rezerwację lub czy ma uprawnienia
+        # Sprawdzamy, czy użytkownik jest właścicielem lub ma prawo anulować rezerwację.
         if rezerwacja.uzytkownik_id != user.pk and not user.has_perm(
             "reservations.cancel_reservation"
         ):
@@ -244,7 +244,7 @@ def collect_reservation(reservation_id, user):
             pk=reservation_id,
         )
 
-        # jeśli odbiór został już potwierdzony zakańczamy bez zmiany daty odbioru i terminu zwrotu
+        # Jeśli odbiór został już potwierdzony, nie zmieniamy daty odbioru ani terminu zwrotu.
         if rezerwacja.status == Rezerwacja.Status.ODEBRANA:
             return rezerwacja
 

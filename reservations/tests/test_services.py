@@ -53,24 +53,24 @@ class ExpireReservationsTests(TestCase):
         )
 
     def test_expires_at_pickup_deadline(self):
-        # wywolanie funkcji i zapisanie ile rekordow zmieniono
+        # Wywołujemy funkcję i zapisujemy, ile rekordów zmieniono.
         count = expire_reservations(now=self.now)
 
         # pobranie świeżych danych
         self.reservation.refresh_from_db()
         self.copy.refresh_from_db()
 
-        # sprawdzamy dla testowych danych czy wartosci sie zmienily
+        # Sprawdzamy, czy wartości w danych testowych się zmieniły.
         # jedna wygaszona rezerwacja
         self.assertEqual(count, 1)
 
-        # status czy status rezerwacji został ustawiony na WYGASLA
+        # Sprawdzamy, czy status rezerwacji zmienił się na WYGASLA.
         self.assertEqual(
             self.reservation.status,
             Rezerwacja.Status.WYGASLA,
         )
 
-        # dostepny ustawiony na True
+        # Pole dostepny ma wartość True.
         self.assertTrue(self.copy.dostepny)
 
     def test_expires_after_pickup_deadline(self):
@@ -104,7 +104,7 @@ class ExpireReservationsTests(TestCase):
 
         self.assertFalse(self.copy.dostepny)
 
-    # sprawdzamy czy wielokrotne uruchamianie funkcji expire_reservations coś psuje
+    # Sprawdzamy, czy ponowne wywołanie expire_reservations zmienia dane.
     def test_repeated_expiration_does_not_change_anything(self):
         first_count = expire_reservations(now=self.now)
         second_count = expire_reservations(now=self.now)
@@ -120,7 +120,7 @@ class ExpireReservationsTests(TestCase):
         )
         self.assertTrue(self.copy.dostepny)
 
-    # sprawdzamy czy expire_reservations pomija wycofane z udostępnienia ksiazki
+    # Sprawdzamy, czy expire_reservations nie przywraca wycofanego egzemplarza.
     def test_expiration_does_not_reactivate_withdrawn_copy(self):
         self.copy.aktywny = False
         self.copy.save(update_fields=["aktywny"])
@@ -128,12 +128,12 @@ class ExpireReservationsTests(TestCase):
         expire_reservations(now=self.now)
         self.copy.refresh_from_db()
 
-        # dostepny do wypozyczenia
+        # Egzemplarz przestaje być zajęty.
         self.assertTrue(self.copy.dostepny)
-        # aktywny w zbiorze (nie wycofany)
+        # Egzemplarz nadal pozostaje wycofany.
         self.assertFalse(self.copy.aktywny)
 
-    # czy odebrana przez czytelnika ksiazka pozostaje zajęta nawet po terminie zwrotu
+    # Sprawdzamy, czy odebrana przez czytelnika książka pozostaje zajęta po terminie zwrotu.
     def test_expiration_ignores_collected_reservations(self):
         self.reservation.status = Rezerwacja.Status.ODEBRANA
         self.reservation.odebrana_at = self.reservation.utworzona_at + timedelta(
@@ -158,7 +158,7 @@ class ExpireReservationsTests(TestCase):
             Rezerwacja.Status.ODEBRANA,
         )
 
-        # nadal ma byc niedostepny - bo zostal odebrany ale nie zwrocony
+        # Nadal ma być niedostępny, bo został odebrany, ale nie został zwrócony.
         self.assertFalse(self.copy.dostepny)
 
 
@@ -177,7 +177,7 @@ class ReserveBookTests(TestCase):
         )
 
     def test_creates_reservation_for_48_hours(self):
-        # reserve_book nie przyjmuje godziny - kontrolujemy jej wartosc z pomocą patch
+        # reserve_book nie przyjmuje daty, więc ustawiamy ją za pomocą patch.
         with patch("reservations.services.timezone.now", return_value=self.now):
             rezerwacja = reserve_book(self.user, self.book.pk)
 
@@ -376,7 +376,7 @@ class CancelReservationTests(TestCase):
                 self.reservation.refresh_from_db()
                 self.egzemplarz.refresh_from_db()
 
-                # sprawdzamy czy rezerwacja jest nadal nie zmieniona
+                # Sprawdzamy, czy rezerwacja pozostała niezmieniona.
                 self.assertEqual(
                     self.reservation.status,
                     Rezerwacja.Status.OCZEKUJACA,
@@ -847,7 +847,7 @@ class ConcurrentReservationTests(TransactionTestCase):
         try:
             user = get_user_model().objects.get(pk=user_id)
 
-            # bariera - wątki czekają tu aby zacząć próbę razem
+            # Wątki czekają tu, aby zacząć próbę razem.
             start_barrier.wait(timeout=10)
 
             reserve_book(user, book_id)

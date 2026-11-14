@@ -54,6 +54,19 @@ class RezerwacjaAdmin(admin.ModelAdmin):
         "potwierdz_zwrot",
     )
 
+    def changelist_view(self, request, extra_context=None):
+        return super().changelist_view(
+            request, {"title": "Rezerwacje", **(extra_context or {})}
+        )
+
+    def change_view(self, request, object_id, form_url="", extra_context=None):
+        return super().change_view(
+            request,
+            object_id,
+            form_url,
+            {"title": "Zobacz rezerwację", **(extra_context or {})},
+        )
+
     def has_add_permission(self, request):
         return False
 

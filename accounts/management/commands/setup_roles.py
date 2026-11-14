@@ -55,7 +55,7 @@ class Command(BaseCommand):
         if brakujace_uprawnienia:
             brakujace = ", ".join(brakujace_uprawnienia)
             raise CommandError(
-                f"Nie znaleziono uprawnień: {brakujace}." "Najpierw uruchom migracje."
+                f"Nie znaleziono uprawnień: {brakujace}. Najpierw uruchom migracje."
             )
 
         grupa, utworzono = Group.objects.get_or_create(

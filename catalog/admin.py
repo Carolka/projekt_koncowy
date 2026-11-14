@@ -11,6 +11,24 @@ class AutorAdmin(admin.ModelAdmin):
     search_fields = ("imie", "nazwisko")
     ordering = ("nazwisko", "imie")
 
+    def changelist_view(self, request, extra_context=None):
+        return super().changelist_view(
+            request, {"title": "Autorzy", **(extra_context or {})}
+        )
+
+    def render_change_form(
+        self, request, context, add=False, change=False, form_url="", obj=None
+    ):
+        if change:
+            context["title"] = (
+                "Zmień autora"
+                if self.has_change_permission(request, obj)
+                else "Zobacz autora"
+            )
+        return super().render_change_form(
+            request, context, add=add, change=change, form_url=form_url, obj=obj
+        )
+
 
 @admin.register(Gatunek)
 class GatunekAdmin(admin.ModelAdmin):
@@ -39,6 +57,22 @@ class KsiazkaAdmin(admin.ModelAdmin):
     list_filter = ("gatunki", "egzemplarze__aktywny")
     filter_horizontal = ("autorzy", "gatunki")
     inlines = (EgzemplarzInline,)
+
+    def changelist_view(self, request, extra_context=None):
+        return super().changelist_view(
+            request, {"title": "Książki", **(extra_context or {})}
+        )
+
+    def render_change_form(self, request, context, add=False, change=False, form_url="", obj=None):
+        if change:
+            context["title"] = (
+                "Zmień książkę"
+                if self.has_change_permission(request, obj)
+                else "Zobacz książkę"
+            )
+        return super().render_change_form(
+            request, context, add=add, change=change, form_url=form_url, obj=obj
+        )
 
 
 @admin.register(Egzemplarz)
