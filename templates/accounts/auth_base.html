@@ -1,0 +1,45 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}{% endblock %} – Biblioteka</title>
+    <link rel="stylesheet" href="{% static 'css/auth.css' %}">
+</head>
+<body>
+    <header class="auth-header">
+        <a class="auth-brand" href="{% url 'catalog:book_list' %}">
+            {% include "includes/book_icon.html" %}
+            Biblioteka
+        </a>
+        <a class="auth-back" href="{% url 'catalog:book_list' %}">Wróć do katalogu</a>
+    </header>
+
+    <main class="auth-main">
+        <section class="auth-card" aria-labelledby="auth-title">
+            <h1 id="auth-title">{% block heading %}{% endblock %}</h1>
+            <form class="auth-form" method="post">
+                {% csrf_token %}
+                {{ form.non_field_errors }}
+                {% for field in form.visible_fields %}
+                <div class="auth-field">
+                    <label for="{{ field.id_for_label }}">
+                        {% if field.name == "password2" %}Powtórz hasło{% else %}{{ field.label }}{% endif %}
+                    </label>
+                    {{ field }}
+                    {{ field.errors }}
+                </div>
+                {% endfor %}
+                {% for field in form.hidden_fields %}{{ field }}{% endfor %}
+                {% if next %}
+                <input type="hidden" name="next" value="{{ next }}">
+                {% endif %}
+                <button type="submit">{% block submit_label %}{% endblock %}</button>
+                {% block form_help %}{% endblock %}
+            </form>
+            <p class="auth-switch">{% block switch_link %}{% endblock %}</p>
+        </section>
+    </main>
+</body>
+</html>

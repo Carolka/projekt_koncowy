@@ -88,6 +88,17 @@ class BookListViewTests(TestCase):
                     [self.ksiazka],
                 )
 
+    def test_search_only_uses_selected_field(self):
+        druga_ksiazka = Ksiazka.objects.create(tytul="Herbert")
+
+        for pole, oczekiwana in [("tytul", druga_ksiazka), ("autor", self.ksiazka)]:
+            with self.subTest(pole=pole):
+                response = self.client.get(
+                    reverse("catalog:book_list"),
+                    {"q": "Herbert", "pole": pole},
+                )
+                self.assertEqual(list(response.context["page_obj"]), [oczekiwana])
+
     def test_genre_filter_returns_books_of_selected_genre(self):
         response = self.client.get(
             reverse("catalog:book_list"),

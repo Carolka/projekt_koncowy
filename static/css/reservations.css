@@ -1,0 +1,62 @@
+.reader-reservations {
+    max-width: 70rem;
+}
+
+.reservation-section {
+    margin-top: 1.75rem;
+}
+
+.reservation-section h2 {
+    margin: 0 0 .75rem;
+    font: bold 1.5rem/1.2 Georgia, serif;
+}
+
+.reservation-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 23rem), 1fr));
+    gap: .85rem;
+}
+
+.reservation-card h3 {
+    margin: 0 0 .5rem;
+    font: bold 1.2rem/1.25 Georgia, serif;
+}
+
+.reservation-status {
+    display: inline-block;
+    padding: .22rem .65rem;
+    border-radius: .55rem;
+    background: #e9ecd9;
+    color: var(--catalog-green);
+    font-size: .85rem;
+    font-weight: 650;
+}
+
+.reservation-status--overdue {
+    background: #f7e8de;
+    color: #842b24;
+}
+
+.reservation-cancel {
+    margin-top: .35rem;
+    padding: .45rem .7rem;
+    border: 1px solid #842b24;
+    border-radius: .5rem;
+    background: transparent;
+    color: #842b24;
+    font: inherit;
+    cursor: pointer;
+}
+
+.reservation-cancel:hover {
+    background: #f7e8de;
+}
+
+.reservation-empty {
+    grid-column: 1 / -1;
+    margin: 0;
+    padding: 1rem;
+    border: 1px dashed var(--catalog-olive);
+    border-radius: .85rem;
+    background: var(--catalog-card);
+}

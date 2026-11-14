@@ -95,6 +95,10 @@ def reserve_book(user, book_id):
     if not user.is_authenticated or not user.is_active:
         raise PermissionDenied("Rezerwacja tylko dla zalogowanych i aktywnych kont.")
 
+    if user.groups.filter(name="Bibliotekarki").exists():
+        raise PermissionDenied(
+            "Aby zarezerwować książkę dla siebie, zaloguj się na konto czytelnika."
+        )
     with transaction.atomic():
         # ksiazka, egzemplarze, rezerwacje
         ksiazka = Ksiazka.objects.select_for_update().get(pk=book_id)

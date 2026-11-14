@@ -170,6 +170,22 @@ class LoginViewTests(TestCase):
         )
         self.assertIn("_auth_user_id", self.client.session)
 
+    def test_librarian_is_redirected_to_admin_even_with_catalog_next(self):
+        self.user.is_staff = True
+        self.user.save(update_fields=["is_staff"])
+        self.user.groups.add(Group.objects.create(name="Bibliotekarki"))
+
+        response = self.client.post(
+            reverse("login"),
+            {
+                "username": self.user.username,
+                "password": self.haslo,
+                "next": reverse("catalog:book_list"),
+            },
+        )
+
+        self.assertRedirects(response, reverse("admin:index"))
+
     def test_invalid_login_does_not_authenticate_user(self):
         response = self.client.post(
             reverse("login"),

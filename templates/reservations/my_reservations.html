@@ -1,47 +1,42 @@
 {% extends "base.html" %}
-{% block title %} Moje rezerwacje {% endblock %}
+{% load static %}
+{% block title %}Moje rezerwacje{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/catalog.css' %}">
+<link rel="stylesheet" href="{% static 'css/reservations.css' %}">
+{% endblock %}
+{% block site_brand %}
+<a class="catalog-brand" href="{% url 'catalog:book_list' %}">
+    {% include "includes/book_icon.html" %}
+    Biblioteka
+</a>
+{% endblock %}
 
 {% block content %}
-<h1> Moje rezerwacje</h1>
-<h2>Bieżące</h2>
-{% for rezerwacja in biezace_rezerwacje %}
-<article>
-    <h3>
-        <a href="{% url 'catalog:book_detail' rezerwacja.egzemplarz.ksiazka.pk %}">
-            {{ rezerwacja.egzemplarz.ksiazka.tytul }}
-        </a>
-    </h3>
-    <p> Egzemplarz: {{ rezerwacja.egzemplarz.numer_inwentarzowy }}</p>
-    <p> Status: {{ rezerwacja.get_status_display }}</p>
-    {% if rezerwacja.status == "OCZEKUJACA" %}
-    <p> Termin odbioru: {{ rezerwacja.termin_odbioru|date:"d.m.Y H:i" }}</p>
-    <form method="post" action="{% url 'reservations:cancel_reservation' rezerwacja.pk %}">
-        {% csrf_token %}
-        <button type="submit">Anuluj rezerwację</button>
-    </form>
-    {% elif rezerwacja.status == "ODEBRANA" %}
-    <p> Termin zwrotu: {{ rezerwacja.termin_zwrotu|date:"d.m.Y H:i" }}</p>
-    {% endif %}
-</article>
-{% empty %}
-<p> Nie masz bieżących rezerwacji.</p>
-{% endfor %}
+<div class="catalog reader-reservations">
+    <p class="book-back"><a href="{% url 'catalog:book_list' %}">← Wróć do katalogu</a></p>
+    <h1>Moje rezerwacje</h1>
 
-<h2> Historia </h2>
-{% for rezerwacja in historyczne_rezerwacje %}
-<article>
-    <h3>
-        <a href="{% url 'catalog:book_detail' rezerwacja.egzemplarz.ksiazka.pk %}">
-            {{ rezerwacja.egzemplarz.ksiazka.tytul }}
-        </a>
-    </h3>
-    <p> Egzemplarz: {{ rezerwacja.egzemplarz.numer_inwentarzowy }}</p>
-    {% if rezerwacja.status == "OCZEKUJACA" and rezerwacja.termin_odbioru <= teraz %} <p> Status: Wygasła </p>
-        {% else %}
-        <p> Status: {{ rezerwacja.get_status_display }}</p>
-        {% endif %}
-</article>
-{% empty %}
-<p>Historia rezerwacji jest pusta.</p>
-{% endfor %}
+    <section class="reservation-section" aria-labelledby="current-reservations">
+        <h2 id="current-reservations">Bieżące rezerwacje</h2>
+        <div class="reservation-grid">
+            {% for rezerwacja in biezace_rezerwacje %}
+                {% include "reservations/reader_card.html" with biezaca=True %}
+            {% empty %}
+                <p class="reservation-empty">Nie masz bieżących rezerwacji.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="reservation-section" aria-labelledby="reservation-history">
+        <h2 id="reservation-history">Historia rezerwacji</h2>
+        <div class="reservation-grid">
+            {% for rezerwacja in historyczne_rezerwacje %}
+                {% include "reservations/reader_card.html" with biezaca=False %}
+            {% empty %}
+                <p class="reservation-empty">Historia rezerwacji jest pusta.</p>
+            {% endfor %}
+        </div>
+    </section>
+</div>
 {% endblock %}

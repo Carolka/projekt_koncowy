@@ -1,30 +1,9 @@
-<!DOCTYPE html>
-<html lang="pl">
+{% extends "accounts/auth_base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <title>Logowanie - Katalog biblioteczny</title>
-</head>
+{% block title %}Zaloguj się{% endblock %}
+{% block heading %}Zaloguj się{% endblock %}
+{% block submit_label %}Zaloguj się{% endblock %}
 
-<body>
-    <main>
-        <h1>Logowanie</h1>
-
-        <form method="post">
-            {% csrf_token %}
-            {{ form.as_p }}
-
-            {% if next %}
-            <input type="hidden" name="next" value="{{ next }}">
-            {% endif %}
-
-            <button type="submit">Zaloguj się</button>
-        </form>
-        <p>
-            Nie masz konta?
-            <a href="{% url 'accounts:register' %}"> Zarejestruj się</a>
-        </p>
-    </main>
-</body>
-
-</html>
+{% block switch_link %}
+Nie masz konta? <a href="{% url 'accounts:register' %}">Załóż konto</a>
+{% endblock %}

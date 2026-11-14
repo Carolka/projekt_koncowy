@@ -1,16 +1,41 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}Katalog książek{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/catalog.css' %}">{% endblock %}
+{% block site_brand %}
+<a class="catalog-brand" href="{% url 'catalog:book_list' %}">
+    {% include "includes/book_icon.html" %}
+    Biblioteka
+</a>
+{% endblock %}
 
 {% block content %}
+<div class="catalog">
 <h1>Katalog książek</h1>
 
-<form method="get" action="{% url 'catalog:book_list' %}">
-    {{form.as_p}}
+<form class="catalog-search" method="get" action="{% url 'catalog:book_list' %}" aria-label="Wyszukiwanie książek">
+    {{ form.non_field_errors }}
+    {% for field in form %}
+    <div class="catalog-filter">
+        {{ field.label_tag }}
+        {{ field }}
+        {{ field.errors }}
+    </div>
+    {% endfor %}
     <button type="submit">Szukaj</button>
 </form>
-<ul>
+<ul class="catalog-grid" role="list">
     {% for ksiazka in page_obj %}
-    <li>
+    <li class="catalog-card">
+        <div class="catalog-cover">
+            {% if ksiazka.okladka %}
+            <img src="{{ ksiazka.okladka.url }}" alt="" width="96" height="144" loading="lazy">
+            {% else %}
+            {% include "includes/book_icon.html" %}
+            <span>Brak okładki</span>
+            {% endif %}
+        </div>
+        <div class="catalog-book">
         <h2>
             <a href="{% url 'catalog:book_detail' ksiazka.pk %}">
                 {{ ksiazka.tytul }}
@@ -34,13 +59,14 @@
             Nie przypisano gatunku
             {% endfor %}
         </p>
+        </div>
     </li>
     {%empty %}
-    <li>Nie znaleziono książek.</li>
+    <li class="catalog-empty">Nie znaleziono książek.</li>
     {% endfor %}
 </ul>
 {% if page_obj.has_other_pages %}
-<nav aria-label="Stronicowanie">
+<nav class="catalog-pagination" aria-label="Stronicowanie">
     {% if page_obj.has_previous %}
     <a href="?{{ query_string }}page={{ page_obj.previous_page_number }}">
         Poprzednia
@@ -56,4 +82,5 @@
     {% endif %}
 </nav>
 {% endif %}
+</div>
 {% endblock %}

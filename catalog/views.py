@@ -3,6 +3,7 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from .forms import BookSearchForm
 from .models import Ksiazka
+from reservations.models import Rezerwacja
 from reservations.services import expire_reservations
 
 
@@ -19,12 +20,18 @@ def book_list(request):
         tylko_dostepne = form.cleaned_data["dostepne"]
 
         if fraza:
-            ksiazki = ksiazki.filter(
-                Q(tytul__icontains=fraza)
-                | Q(isbn__icontains=fraza)
-                | Q(autorzy__imie__icontains=fraza)
+            pole = form.cleaned_data["pole"]
+            tytul = Q(tytul__icontains=fraza)
+            autor = (
+                Q(autorzy__imie__icontains=fraza)
                 | Q(autorzy__nazwisko__icontains=fraza)
             )
+            if pole == "tytul":
+                ksiazki = ksiazki.filter(tytul)
+            elif pole == "autor":
+                ksiazki = ksiazki.filter(autor)
+            else:
+                ksiazki = ksiazki.filter(tytul | autor | Q(isbn__icontains=fraza))
 
         if gatunek:
             ksiazki = ksiazki.filter(gatunki=gatunek)
@@ -76,6 +83,12 @@ def book_detail(request, pk):
         dostepny=True,
     ).count()
 
+    ma_biezaca_rezerwacje = request.user.is_authenticated and Rezerwacja.objects.filter(
+        uzytkownik=request.user,
+        egzemplarz__ksiazka=ksiazka,
+        status__in=[Rezerwacja.Status.OCZEKUJACA, Rezerwacja.Status.ODEBRANA],
+    ).exists()
+
     return render(
         request,
         "catalog/book_detail.html",
@@ -83,5 +96,6 @@ def book_detail(request, pk):
             "ksiazka": ksiazka,
             "liczba_aktywnych_egzemplarzy": liczba_aktywnych_egzemplarzy,
             "liczba_dostepnych_egzemplarzy": liczba_dostepnych_egzemplarzy,
+            "ma_biezaca_rezerwacje": ma_biezaca_rezerwacje,
         },
     )

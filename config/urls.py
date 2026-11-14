@@ -19,9 +19,11 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from accounts.views import LibraryLoginView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("accounts/login/", LibraryLoginView.as_view(), name="login"),
     path("accounts/", include("accounts.urls")),
     # udostępnienie wbudowanych adresow Django do logowania i wylogowania
     path("accounts/", include("django.contrib.auth.urls")),

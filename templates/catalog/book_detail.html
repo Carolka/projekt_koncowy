@@ -1,63 +1,89 @@
 {% extends "base.html" %}
-{% block title %} {{ ksiazka.tytul }}{% endblock %}
+{% load static %}
+{% block title %}{{ ksiazka.tytul }}{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/catalog.css' %}">{% endblock %}
+{% block site_brand %}
+<a class="catalog-brand" href="{% url 'catalog:book_list' %}">
+    {% include "includes/book_icon.html" %}
+    Biblioteka
+</a>
+{% endblock %}
 
 {% block content %}
-<p>
-    <a href="{% url 'catalog:book_list' %}">Wróć do katalogu</a>
-</p>
-<h1> {{ ksiazka.tytul }}</h1>
-{% if ksiazka.okladka %}
-<img src="{{ ksiazka.okladka.url }}" alt="Okładka książki {{ ksiazka.tytul }}"
-    style="width: 240px; max-width: 100%; height: auto;">
-{% endif %}
-{% if ksiazka.opis %}
-<p>{{ ksiazka.opis }}</p>
-{% endif %}
+<div class="catalog">
+    <p class="book-back"><a href="{% url 'catalog:book_list' %}">← Wróć do katalogu</a></p>
+    <article class="book-detail">
+        <div class="catalog-cover book-detail-cover">
+            {% if ksiazka.okladka %}
+            <img src="{{ ksiazka.okladka.url }}" alt="Okładka książki {{ ksiazka.tytul }}">
+            {% else %}
+            {% include "includes/book_icon.html" %}
+            <span>Brak okładki</span>
+            {% endif %}
+        </div>
 
-<p>
-    Autorzy:
-    {% for autor in ksiazka.autorzy.all %}
-    {{ autor }} {% if not forloop.last %}, {% endif %}
-    {% empty %}
-    Nie podano
-    {% endfor %}
-</p>
+        <div class="book-detail-info">
+            <h1>{{ ksiazka.tytul }}</h1>
+            <p class="book-author">
+                {% for autor in ksiazka.autorzy.all %}
+                {{ autor }}{% if not forloop.last %}, {% endif %}
+                {% empty %}
+                Nie podano autora
+                {% endfor %}
+            </p>
 
-<p>
-    Gatunki:
-    {% for gatunek in ksiazka.gatunki.all %}
-    {{ gatunek }}{% if not forloop.last %}, {% endif %}
-    {% empty %}
-    Nie przypisano gatunku
-    {% endfor %}
-</p>
-{% if ksiazka.isbn %}
-<p>ISBN: {{ ksiazka.isbn }}</p>
-{% endif %}
-{% if ksiazka.rok_wydania %}
-<p>Rok wydania: {{ ksiazka.rok_wydania }}</p>
-{% endif %}
+            <dl class="book-meta">
+                <div>
+                    <dt>Gatunki</dt>
+                    <dd>
+                        {% for gatunek in ksiazka.gatunki.all %}
+                        {{ gatunek }}{% if not forloop.last %}, {% endif %}
+                        {% empty %}
+                        Nie przypisano gatunku
+                        {% endfor %}
+                    </dd>
+                </div>
+                {% if ksiazka.isbn %}
+                <div><dt>ISBN</dt><dd>{{ ksiazka.isbn }}</dd></div>
+                {% endif %}
+                {% if ksiazka.rok_wydania %}
+                <div><dt>Rok wydania</dt><dd>{{ ksiazka.rok_wydania }}</dd></div>
+                {% endif %}
+            </dl>
 
-<p>
-    Dostępnych egzemplarzy:
-    {{ liczba_dostepnych_egzemplarzy }}
-    z {{ liczba_aktywnych_egzemplarzy }} aktywnych
-</p>
+            {% if ksiazka.opis %}
+            <section class="book-description">
+                <h2>O książce</h2>
+                {{ ksiazka.opis|linebreaks }}
+            </section>
+            {% endif %}
 
-{% if liczba_dostepnych_egzemplarzy > 0 %}
-{% if user.is_authenticated %}
-<form method="post" action="{% url 'reservations:reserve_book' ksiazka.pk %}">
-    {% csrf_token %}
-    <button type="submit"> Zarezerwuj książkę</button>
-</form>
-{% else %}
-<p>
-    <a href="{% url 'login' %}?next={{request.path|urlencode }}">
-        Zaloguj się, aby zarezerwować książkę
-    </a>
-</p>
-{% endif %}
-{% else %}
-<p>Brak dostępnych egzemplarzy.</p>
-{% endif %}
+            <section class="book-availability">
+                <h2>Dostępność</h2>
+                <p>
+                    Dostępnych egzemplarzy:
+                    <strong>{{ liczba_dostepnych_egzemplarzy }}</strong>
+                    z {{ liczba_aktywnych_egzemplarzy }} aktywnych
+                </p>
+                {% if ma_biezaca_rezerwacje %}
+                    <button class="book-action" type="button" disabled>Już zarezerwowano</button>
+                    <p><a href="{% url 'reservations:my_reservations' %}">Przejdź do moich rezerwacji</a></p>
+                {% elif liczba_dostepnych_egzemplarzy > 0 %}
+                    {% if user.is_authenticated %}
+                    <form method="post" action="{% url 'reservations:reserve_book' ksiazka.pk %}">
+                        {% csrf_token %}
+                        <button class="book-action" type="submit">Zarezerwuj książkę</button>
+                    </form>
+                    {% else %}
+                    <a class="book-action" href="{% url 'login' %}?next={{ request.path|urlencode }}">
+                        Zaloguj się, aby zarezerwować książkę
+                    </a>
+                    {% endif %}
+                {% else %}
+                <p>Brak dostępnych egzemplarzy.</p>
+                {% endif %}
+            </section>
+        </div>
+    </article>
+</div>
 {% endblock %}

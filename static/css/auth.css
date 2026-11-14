@@ -1,0 +1,149 @@
+:root {
+    color-scheme: light;
+    --paper: #f5f1e7;
+    --card: #fffefd;
+    --ink: #142e23;
+    --green: #104736;
+    --olive: #5b7029;
+    --error: #9c2929;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font: 1rem/1.45 system-ui, sans-serif;
+}
+
+a {
+    color: var(--green);
+    font-weight: 650;
+    text-underline-offset: .17em;
+}
+
+:focus-visible {
+    outline: 3px solid var(--olive);
+    outline-offset: 4px;
+}
+
+.auth-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .6rem 1.25rem;
+    flex-wrap: wrap;
+    padding: .65rem clamp(1rem, 3vw, 2rem);
+    border-bottom: 2px solid var(--olive);
+}
+
+.auth-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: .25em;
+    font: bold clamp(1.4rem, 3vw, 2rem)/1.2 Georgia, serif;
+    text-decoration: none;
+}
+
+.auth-brand svg {
+    width: 1.65em;
+    height: auto;
+}
+
+.auth-back {
+    font-size: 1rem;
+}
+
+.auth-main {
+    padding: clamp(1.25rem, 4vw, 2.5rem) 1rem 2rem;
+}
+
+.auth-card {
+    width: min(100%, 35rem);
+    margin-inline: auto;
+    padding: clamp(1.1rem, 4vw, 2rem);
+    background: var(--card);
+    border: 2px solid var(--olive);
+    border-radius: 1rem;
+}
+
+.auth-card h1 {
+    margin: 0 0 .55em;
+    font: bold clamp(1.9rem, 5vw, 2.75rem)/1.1 Georgia, serif;
+    text-align: center;
+}
+
+.auth-form {
+    display: grid;
+    gap: .9rem;
+}
+
+.auth-field label {
+    display: block;
+    margin-bottom: .35em;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.auth-field input {
+    width: 100%;
+    min-height: 2.75rem;
+    padding: .4em .7em;
+    border: 1.5px solid var(--olive);
+    border-radius: .5rem;
+    background: #fff;
+    color: inherit;
+    font: inherit;
+}
+
+.auth-field input[aria-invalid="true"] {
+    border-color: var(--error);
+}
+
+.auth-form button {
+    min-height: 2.875rem;
+    margin-top: .25rem;
+    padding: .35em .75em;
+    border: 0;
+    border-radius: .75rem;
+    background: var(--green);
+    color: #fff;
+    cursor: pointer;
+    font: inherit;
+    font-size: 1.125rem;
+    font-weight: 750;
+}
+
+.auth-form button:hover {
+    background: #0c392a;
+}
+
+.auth-help {
+    font-size: .9rem;
+}
+
+.auth-help summary {
+    cursor: pointer;
+    color: var(--green);
+}
+
+.auth-help div {
+    margin-top: .5rem;
+}
+
+.auth-form .errorlist {
+    margin: .35rem 0 0;
+    padding-inline-start: 1.25rem;
+    color: var(--error);
+}
+
+.auth-switch {
+    margin: 1.25rem 0 0;
+    padding-top: .9rem;
+    border-top: 1px solid var(--olive);
+    text-align: center;
+    font-size: 1rem;
+}

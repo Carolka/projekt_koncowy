@@ -3,12 +3,14 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title%} Katalog biblioteczny{% endblock %}</title>
+    {% block extra_css %}{% endblock %}
 </head>
 
 <body>
-    <header>
-        <a href="{% url 'catalog:book_list' %}"> Katalog książek</a>
+    <header class="site-header">
+        {% block site_brand %}<a href="{% url 'catalog:book_list' %}">Katalog książek</a>{% endblock %}
         <nav>
             {% if user.is_authenticated %}
             <span>Zalogowano jako {{user.username}}</span>

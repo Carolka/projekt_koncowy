@@ -1,0 +1,33 @@
+{% with ksiazka=rezerwacja.egzemplarz.ksiazka %}
+<article class="catalog-card reservation-card">
+    <div class="catalog-cover">
+        {% if ksiazka.okladka %}
+        <img src="{{ ksiazka.okladka.url }}" alt="" width="96" height="144" loading="lazy">
+        {% else %}
+        {% include "includes/book_icon.html" %}
+        <span>Brak okładki</span>
+        {% endif %}
+    </div>
+    <div class="catalog-book">
+        <h3><a href="{% url 'catalog:book_detail' ksiazka.pk %}">{{ ksiazka.tytul }}</a></h3>
+        {% if biezaca and rezerwacja.status == "ODEBRANA" and rezerwacja.termin_zwrotu <= teraz %}
+        <span class="reservation-status reservation-status--overdue">Odebrana · po terminie</span>
+        {% elif not biezaca and rezerwacja.status == "OCZEKUJACA" %}
+        <span class="reservation-status">Wygasła</span>
+        {% else %}
+        <span class="reservation-status">{{ rezerwacja.get_status_display }}</span>
+        {% endif %}
+        <p>Egzemplarz: {{ rezerwacja.egzemplarz.numer_inwentarzowy }}</p>
+
+        {% if biezaca and rezerwacja.status == "OCZEKUJACA" %}
+        <p>Termin odbioru: <strong>{{ rezerwacja.termin_odbioru|date:"d.m.Y H:i" }}</strong></p>
+        <form method="post" action="{% url 'reservations:cancel_reservation' rezerwacja.pk %}">
+            {% csrf_token %}
+            <button class="reservation-cancel" type="submit">Anuluj rezerwację</button>
+        </form>
+        {% elif biezaca and rezerwacja.status == "ODEBRANA" %}
+        <p>Termin zwrotu: <strong>{{ rezerwacja.termin_zwrotu|date:"d.m.Y H:i" }}</strong></p>
+        {% endif %}
+    </div>
+</article>
+{% endwith %}

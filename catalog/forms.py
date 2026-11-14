@@ -8,6 +8,15 @@ class BookSearchForm(forms.Form):
         required=False,
         max_length=255,
     )
+    pole = forms.ChoiceField(
+        label="Szukaj według",
+        choices=[
+            ("", "Tytuł, autor lub ISBN"),
+            ("tytul", "Tytuł"),
+            ("autor", "Autor"),
+        ],
+        required=False,
+    )
     gatunek = forms.ModelChoiceField(
         label="Gatunek",
         queryset=Gatunek.objects.all(),
