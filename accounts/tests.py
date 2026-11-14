@@ -170,10 +170,11 @@ class LoginViewTests(TestCase):
         )
         self.assertIn("_auth_user_id", self.client.session)
 
-    def test_librarian_is_redirected_to_admin_even_with_catalog_next(self):
+    def test_librarian_is_redirected_to_reservations_even_with_catalog_next(self):
+        call_command("setup_roles")
         self.user.is_staff = True
         self.user.save(update_fields=["is_staff"])
-        self.user.groups.add(Group.objects.create(name="Bibliotekarki"))
+        self.user.groups.add(Group.objects.get(name="Bibliotekarki"))
 
         response = self.client.post(
             reverse("login"),
@@ -182,6 +183,18 @@ class LoginViewTests(TestCase):
                 "password": self.haslo,
                 "next": reverse("catalog:book_list"),
             },
+        )
+
+        self.assertRedirects(response, reverse("admin:reservations_rezerwacja_changelist"))
+
+    def test_librarian_without_reservation_permission_is_redirected_to_admin_index(self):
+        self.user.is_staff = True
+        self.user.save(update_fields=["is_staff"])
+        self.user.groups.add(Group.objects.create(name="Bibliotekarki"))
+
+        response = self.client.post(
+            reverse("login"),
+            {"username": self.user.username, "password": self.haslo},
         )
 
         self.assertRedirects(response, reverse("admin:index"))
