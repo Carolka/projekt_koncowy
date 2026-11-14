@@ -71,6 +71,27 @@ KSIAZKI_POKAZOWE = [
     },
 ]
 
+POMYSLY_NA_KSIAZKI = [
+    (
+        "Szyfr w starej drukarni",
+        "Kryminał",
+        "Reporterka znajduje w dawnej drukarni zaszyfrowane ogłoszenie. "
+        "Podany w nim adres prowadzi do domu zaginionego zecera.",
+    ),
+    (
+        "Latarnia bez cienia",
+        "Fantasy",
+        "Strażniczka latarni odkrywa, że jej światło odsłania wyspę, "
+        "która znika z map za każdym razem, gdy gaśnie płomień.",
+    ),
+    (
+        "Zeszyt z przepisami",
+        "Powieść obyczajowa",
+        "Po zamknięciu rodzinnej piekarni wnuczka znajduje zeszyt z przepisami. "
+        "Dopiski na marginesach pomagają jej odtworzyć historię babci.",
+    ),
+]
+
 OKLADKI_POKAZOWE = {
     "Cień nad Motławą": "cien-nad-motlawa.png",
     "Dom przy ulicy Lipowej": "dom-przy-ulicy-lipowej.png",
@@ -108,22 +129,22 @@ class Command(BaseCommand):
         faker = Faker("pl_PL")
         faker.seed_instance(options["seed"])
 
-        ksiazki = KSIAZKI_POKAZOWE[:liczba_ksiazek]
-        while len(ksiazki) < liczba_ksiazek:
-            miejsce = faker.random_element(
-                ["Gdańsku", "Krakowie", "Lublinie", "Toruniu"]
+        maksymalna_liczba = len(KSIAZKI_POKAZOWE) + len(POMYSLY_NA_KSIAZKI)
+        if liczba_ksiazek > maksymalna_liczba:
+            raise CommandError(
+                f"Obecnie można przygotować maksymalnie {maksymalna_liczba} książek."
             )
-            temat = faker.random_element(["List", "Ślad", "Szyfr", "Sekret"])
 
+        ksiazki = KSIAZKI_POKAZOWE[:liczba_ksiazek]
+        liczba_dodatkowych = liczba_ksiazek - len(ksiazki)
+
+        for tytul, gatunek, opis in POMYSLY_NA_KSIAZKI[:liczba_dodatkowych]:
             ksiazki.append(
                 {
-                    "tytul": f"{temat} w {miejsce}",
+                    "tytul": tytul,
                     "autor": f"{faker.first_name()} {faker.last_name()}",
-                    "gatunek": "Kryminał",
-                    "opis": (
-                        f"Podczas śledztwa w {miejsce} detektywka odkrywa, "
-                        f"że {temat.lower()} może wyjaśnić zaginięcie bibliotekarza."
-                    ),
+                    "gatunek": gatunek,
+                    "opis": opis,
                 }
             )
         dodane_ksiazki = 0
@@ -216,7 +237,7 @@ class Command(BaseCommand):
         )
 
         if not sciezka.is_file():
-            self.stderr.write("Brak pliku okładki: {nazwa_pliku}")
+            self.stderr.write(f"Brak pliku okładki: {nazwa_pliku}")
             return
 
         with sciezka.open("rb") as plik:
