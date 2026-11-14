@@ -49,7 +49,9 @@ def cancel_reservation_view(request, reservation_id):
     )
 
     try:
-        cancel_reservation(rezerwacja.pk, request.user)
+        cancel_reservation(
+            rezerwacja.pk, request.user, wymagaj_nowego_anulowania=True
+        )
     except ReservationNotCancellable as error:
         messages.error(request, str(error))
     else:
@@ -209,7 +211,9 @@ def collect_reservation_view(request, reservation_id):
     expire_reservations()
 
     try:
-        collect_reservation(rezerwacja.pk, request.user)
+        collect_reservation(
+            rezerwacja.pk, request.user, wymagaj_nowego_odbioru=True
+        )
     except ReservationNotCollectable as error:
         messages.error(request, str(error))
     else:
@@ -230,7 +234,9 @@ def return_reservation_view(request, reservation_id):
         pk=reservation_id,
     )
     try:
-        return_reservation(rezerwacja.pk, request.user)
+        return_reservation(
+            rezerwacja.pk, request.user, wymagaj_nowego_zwrotu=True
+        )
     except ReservationNotReturnable as error:
         messages.error(request, str(error))
     else:
@@ -251,7 +257,9 @@ def librarian_cancel_reservation_view(request, reservation_id):
         pk=reservation_id,
     )
     try:
-        cancel_reservation(rezerwacja.pk, request.user)
+        cancel_reservation(
+            rezerwacja.pk, request.user, wymagaj_nowego_anulowania=True
+        )
     except ReservationNotCancellable as error:
         messages.error(request, str(error))
     else:

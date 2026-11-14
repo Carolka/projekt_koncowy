@@ -202,7 +202,9 @@ class RezerwacjaAdmin(admin.ModelAdmin):
 
         for rezerwacja in queryset:
             try:
-                cancel_reservation(rezerwacja.pk, request.user)
+                cancel_reservation(
+                    rezerwacja.pk, request.user, wymagaj_nowego_anulowania=True
+                )
             except (PermissionDenied, ReservationNotCancellable) as blad:
                 self.message_user(
                     request,
@@ -234,7 +236,9 @@ class RezerwacjaAdmin(admin.ModelAdmin):
 
         for rezerwacja in queryset:
             try:
-                collect_reservation(rezerwacja.pk, request.user)
+                collect_reservation(
+                    rezerwacja.pk, request.user, wymagaj_nowego_odbioru=True
+                )
             except (PermissionDenied, ReservationNotCollectable) as blad:
                 self.message_user(
                     request,
@@ -260,7 +264,9 @@ class RezerwacjaAdmin(admin.ModelAdmin):
 
         for rezerwacja in queryset:
             try:
-                return_reservation(rezerwacja.pk, request.user)
+                return_reservation(
+                    rezerwacja.pk, request.user, wymagaj_nowego_zwrotu=True
+                )
             except (PermissionDenied, ReservationNotReturnable) as blad:
                 self.message_user(
                     request,

@@ -743,6 +743,55 @@ class ReturnReservationViewTests(TestCase):
         )
         self.assertFalse(self.egzemplarz.dostepny)
 
+    def test_admin_counts_only_new_returns_in_bulk_action(self):
+        termin_pierwszego_zwrotu = self.teraz - timedelta(hours=1)
+        self.rezerwacja.status = Rezerwacja.Status.ZAKONCZONA
+        self.rezerwacja.zwrocona_at = termin_pierwszego_zwrotu
+        self.rezerwacja.save(update_fields=["status", "zwrocona_at"])
+
+        drugi_egzemplarz = Egzemplarz.objects.create(
+            ksiazka=self.egzemplarz.ksiazka,
+            numer_inwentarzowy="RETURN-VIEW-002",
+            dostepny=False,
+        )
+        druga_rezerwacja = Rezerwacja.objects.create(
+            uzytkownik=self.czytelnik,
+            egzemplarz=drugi_egzemplarz,
+            status=Rezerwacja.Status.ODEBRANA,
+            utworzona_at=self.rezerwacja.utworzona_at,
+            termin_odbioru=self.rezerwacja.termin_odbioru,
+            odebrana_at=self.rezerwacja.odebrana_at,
+            termin_zwrotu=self.rezerwacja.termin_zwrotu,
+        )
+
+        self.bibliotekarka.is_staff = True
+        self.bibliotekarka.save(update_fields=["is_staff"])
+        self.bibliotekarka.user_permissions.add(
+            Permission.objects.get(
+                content_type__app_label="reservations",
+                codename="view_rezerwacja",
+            )
+        )
+        self.client.force_login(self.bibliotekarka)
+        adres = reverse("admin:reservations_rezerwacja_changelist")
+
+        response = self.client.post(
+            adres,
+            {
+                "action": "potwierdz_zwrot",
+                "_selected_action": [self.rezerwacja.pk, druga_rezerwacja.pk],
+                "index": 0,
+            },
+            follow=True,
+        )
+
+        self.assertContains(response, "Zwrot tej książki został już potwierdzony.")
+        self.assertContains(response, "Potwierdzono zwrot dla 1 rezerwacji.")
+        self.rezerwacja.refresh_from_db()
+        druga_rezerwacja.refresh_from_db()
+        self.assertEqual(self.rezerwacja.zwrocona_at, termin_pierwszego_zwrotu)
+        self.assertEqual(druga_rezerwacja.status, Rezerwacja.Status.ZAKONCZONA)
+
 
 class LibrarianCancelReservationViewTests(TestCase):
     def setUp(self):
@@ -839,6 +888,64 @@ class LibrarianCancelReservationViewTests(TestCase):
             Rezerwacja.Status.ODEBRANA,
         )
         self.assertFalse(self.egzemplarz.dostepny)
+
+
+    def test_admin_reports_blocked_actions_without_success(self):
+        self.bibliotekarka.is_staff = True
+        self.bibliotekarka.save(update_fields=["is_staff"])
+        self.bibliotekarka.user_permissions.add(
+            *Permission.objects.filter(
+                content_type__app_label="reservations",
+                codename__in=["view_rezerwacja", "collect_reservation"],
+            )
+        )
+        self.client.force_login(self.bibliotekarka)
+        adres = reverse("admin:reservations_rezerwacja_changelist")
+
+        for status, akcja, komunikat, komunikat_sukcesu in [
+            (
+                Rezerwacja.Status.ANULOWANA,
+                "anuluj_rezerwacje",
+                "Ta rezerwacja została już anulowana.",
+                "Akcję anulowania wykonano",
+            ),
+            (
+                Rezerwacja.Status.ODEBRANA,
+                "anuluj_rezerwacje",
+                "Nie można anulować rezerwacji po odbiorze książki.",
+                "Akcję anulowania wykonano",
+            ),
+            (
+                Rezerwacja.Status.ODEBRANA,
+                "potwierdz_odbior",
+                "Odbiór tej książki został już potwierdzony.",
+                "Potwierdzono odbiór dla",
+            ),
+        ]:
+            with self.subTest(status=status, akcja=akcja):
+                odebrana = status == Rezerwacja.Status.ODEBRANA
+                self.rezerwacja.status = status
+                self.rezerwacja.odebrana_at = self.teraz if odebrana else None
+                self.rezerwacja.termin_zwrotu = (
+                    self.teraz + timedelta(days=14) if odebrana else None
+                )
+                self.rezerwacja.anulowana_at = None if odebrana else self.teraz
+                self.rezerwacja.save()
+
+                response = self.client.post(
+                    adres,
+                    {
+                        "action": akcja,
+                        "_selected_action": [self.rezerwacja.pk],
+                        "index": 0,
+                    },
+                    follow=True,
+                )
+
+                self.assertContains(response, komunikat)
+                self.assertNotContains(response, komunikat_sukcesu)
+                self.rezerwacja.refresh_from_db()
+                self.assertEqual(self.rezerwacja.status, status)
 
 
 class ReservationWorkflowViewTests(TestCase):

@@ -158,7 +158,7 @@ def reserve_book(user, book_id):
         return rezerwacja
 
 
-def cancel_reservation(reservation_id, user):
+def cancel_reservation(reservation_id, user, *, wymagaj_nowego_anulowania=False):
     """Anuluje oczekującą rezerwację przed terminem odbioru."""
 
     if not user.is_authenticated or not user.is_active:
@@ -192,7 +192,14 @@ def cancel_reservation(reservation_id, user):
 
         # Ponowne anulowanie nie zmienia dat ani dostępności egzemplarza.
         if rezerwacja.status == Rezerwacja.Status.ANULOWANA:
+            if wymagaj_nowego_anulowania:
+                raise ReservationNotCancellable("Ta rezerwacja została już anulowana.")
             return rezerwacja
+
+        if rezerwacja.status == Rezerwacja.Status.ODEBRANA:
+            raise ReservationNotCancellable(
+                "Nie można anulować rezerwacji po odbiorze książki."
+            )
 
         if rezerwacja.status != Rezerwacja.Status.OCZEKUJACA:
             raise ReservationNotCancellable(
@@ -216,7 +223,7 @@ def cancel_reservation(reservation_id, user):
         return rezerwacja
 
 
-def collect_reservation(reservation_id, user):
+def collect_reservation(reservation_id, user, *, wymagaj_nowego_odbioru=False):
     """Potwierdza odbiór książki przed terminem i ustala termin zwrotu."""
     if not user.is_authenticated or not user.is_active:
         raise PermissionDenied(
@@ -246,6 +253,10 @@ def collect_reservation(reservation_id, user):
 
         # Jeśli odbiór został już potwierdzony, nie zmieniamy daty odbioru ani terminu zwrotu.
         if rezerwacja.status == Rezerwacja.Status.ODEBRANA:
+            if wymagaj_nowego_odbioru:
+                raise ReservationNotCollectable(
+                    "Odbiór tej książki został już potwierdzony."
+                )
             return rezerwacja
 
         # Rezerwacji wygasłej nie można odebrać.
@@ -279,7 +290,7 @@ def collect_reservation(reservation_id, user):
         return rezerwacja
 
 
-def return_reservation(reservation_id, user):
+def return_reservation(reservation_id, user, *, wymagaj_nowego_zwrotu=False):
     """Potwierdza zwrot odebranego egzemplarza."""
     if not user.is_authenticated or not user.is_active:
         raise PermissionDenied(
@@ -310,6 +321,10 @@ def return_reservation(reservation_id, user):
         # jeśli jest już zakończona — nie zmieniamy ponownie jej daty zwrotu
         # ani dostępności egzemplarza, który mógł już zostać zarezerwowany.
         if rezerwacja.status == Rezerwacja.Status.ZAKONCZONA:
+            if wymagaj_nowego_zwrotu:
+                raise ReservationNotReturnable(
+                    "Zwrot tej książki został już potwierdzony."
+                )
             return rezerwacja
 
         if rezerwacja.status != Rezerwacja.Status.ODEBRANA:
