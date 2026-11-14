@@ -13,11 +13,14 @@
         {% block site_brand %}<a href="{% url 'catalog:book_list' %}">Katalog książek</a>{% endblock %}
         <nav>
             {% if user.is_authenticated %}
-            <span>Zalogowano jako {{user.username}}</span>
+            <span class="site-account">
+                <small>Zalogowano jako</small>
+                <strong>{% firstof user.get_full_name user.username %}</strong>
+            </span>
             {% if konto_bibliotekarki %}
                 {% if user.is_staff and user.is_active %}
                     {% if perms.reservations.view_rezerwacja %}
-                    <a href="{% url 'admin:reservations_rezerwacja_changelist' %}">Rezerwacje</a>
+                    <a class="site-nav-button" href="{% url 'admin:reservations_rezerwacja_changelist' %}">Rezerwacje</a>
                     {% else %}
                     <a href="{% url 'admin:index' %}">Panel admina</a>
                     {% endif %}

@@ -85,7 +85,7 @@ a {
     font: inherit;
 }
 
-.catalog-search button, .site-header button {
+.catalog-search button, .site-header button, .site-header .site-nav-button {
     padding: .5rem .9rem;
     border: 0;
     border-radius: .5rem;
@@ -94,6 +94,24 @@ a {
     font: inherit;
     font-weight: 650;
     cursor: pointer;
+}
+
+.site-header .site-nav-button {
+    display: inline-block;
+    text-decoration: none;
+}
+
+.site-header .site-nav-button:hover {
+    background: #0c392a;
+}
+
+.site-account {
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+}
+
+.site-account small {
+    color: #46594f;
 }
 
 .catalog-search button { min-height: 2.75rem; margin-top: 1.8rem; }
