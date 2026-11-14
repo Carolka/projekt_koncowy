@@ -1,0 +1,62 @@
+{% extends "admin/change_list.html" %}
+{% load i18n static %}
+
+{% block extrahead %}
+{{ block.super }}
+<script src="{% static 'js/admin-reservation-filters.js' %}" defer></script>
+{% endblock %}
+
+{% block search %}
+<div class="reservation-filter-panel">
+<form id="reservation-filters" class="reservation-filters" method="get" role="search" aria-label="Wyszukiwanie i filtrowanie rezerwacji">
+    <div class="reservation-filter reservation-filter--search">
+        <label for="searchbar">Szukaj</label>
+        <input type="search" id="searchbar" name="{{ parametr_szukania }}" value="{{ cl.query }}"
+               placeholder="Czytelnik, tytuł lub sygnatura">
+    </div>
+    <div class="reservation-filter">
+        <label for="reservation-search-field">Szukaj według</label>
+        <select id="reservation-search-field" name="pole">
+            <option value="">Wszystkie pola</option>
+            <option value="uzytkownik"{% if pole_wyszukiwania == "uzytkownik" %} selected{% endif %}>Użytkownik</option>
+            <option value="ksiazka"{% if pole_wyszukiwania == "ksiazka" %} selected{% endif %}>Książka</option>
+            <option value="sygnatura"{% if pole_wyszukiwania == "sygnatura" %} selected{% endif %}>Sygnatura</option>
+        </select>
+    </div>
+    {% for filtr in filtry_rezerwacji %}
+    <div class="reservation-filter">
+        <label for="reservation-filter-{{ forloop.counter }}">{{ filtr.etykieta }}</label>
+        <select id="reservation-filter-{{ forloop.counter }}" data-params="{{ filtr.parametry|join:' ' }}">
+            {% for opcja in filtr.opcje %}
+            <option value="{{ opcja.query_string }}"{% if opcja.selected %} selected{% endif %}>{% if forloop.parentloop.first and forloop.first %}Wszystkie statusy{% else %}{{ opcja.display }}{% endif %}</option>
+            {% endfor %}
+        </select>
+    </div>
+    {% endfor %}
+    {% for nazwa, wartosci in cl.filter_params.items %}
+        {% if nazwa != parametr_szukania and nazwa != "pole" %}
+            {% for wartosc in wartosci %}
+            <input type="hidden" name="{{ nazwa }}" value="{{ wartosc }}">
+            {% endfor %}
+        {% endif %}
+    {% endfor %}
+    <button type="submit">{% translate "Filter" %}</button>
+</form>
+{% if cl.is_facets_optional or cl.has_active_filters %}
+<div class="reservation-filter-links">
+    {% if cl.is_facets_optional %}
+        {% if cl.add_facets %}
+        <a class="hidelink" href="{{ cl.remove_facet_link }}">{% translate "Hide counts" %}</a>
+        {% else %}
+        <a class="viewlink" href="{{ cl.add_facet_link }}">{% translate "Show counts" %}</a>
+        {% endif %}
+    {% endif %}
+    {% if cl.has_active_filters %}
+    <a href="{{ cl.clear_all_filters_qs }}">{% translate "Clear all filters" %}</a>
+    {% endif %}
+</div>
+{% endif %}
+</div>
+{% endblock %}
+
+{% block filters %}{% endblock %}

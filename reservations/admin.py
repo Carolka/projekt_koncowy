@@ -1,4 +1,5 @@
 from django.contrib import admin, messages
+from django.contrib.admin.views.main import SEARCH_VAR, ChangeList
 from django.core.exceptions import PermissionDenied
 from django.utils import formats, timezone
 from django.utils.html import format_html
@@ -15,7 +16,16 @@ from .services import (
 )
 
 
+class RezerwacjaChangeList(ChangeList):
+    def get_filters_params(self, params=None):
+        filtry = super().get_filters_params(params)
+        # Pole wyszukiwania nie jest filtrem modelu.
+        filtry.pop("pole", None)
+        return filtry
+
+
 class RezerwacjaAdmin(admin.ModelAdmin):
+    change_list_template = "admin/reservations/rezerwacja/change_list.html"
     list_display = (
         "czytelnik",
         "ksiazka",
@@ -29,12 +39,19 @@ class RezerwacjaAdmin(admin.ModelAdmin):
         "data_zwrotu",
     )
 
+    pola_wyszukiwania = {
+        "uzytkownik": (
+            "uzytkownik__username",
+            "uzytkownik__first_name",
+            "uzytkownik__last_name",
+        ),
+        "ksiazka": ("egzemplarz__ksiazka__tytul",),
+        "sygnatura": ("egzemplarz__numer_inwentarzowy",),
+    }
     search_fields = (
-        "uzytkownik__username",
-        "uzytkownik__first_name",
-        "uzytkownik__last_name",
-        "egzemplarz__ksiazka__tytul",
-        "egzemplarz__numer_inwentarzowy",
+        *pola_wyszukiwania["uzytkownik"],
+        *pola_wyszukiwania["ksiazka"],
+        *pola_wyszukiwania["sygnatura"],
     )
 
     list_filter = ("status", "utworzona_at")
@@ -115,10 +132,31 @@ class RezerwacjaAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         return super().get_queryset(request).prefetch_related("egzemplarz__ksiazka__autorzy")
 
+    def get_changelist(self, request, **kwargs):
+        return RezerwacjaChangeList
+
+    def get_search_fields(self, request):
+        return self.pola_wyszukiwania.get(request.GET.get("pole"), self.search_fields)
+
     def changelist_view(self, request, extra_context=None):
-        return super().changelist_view(
+        response = super().changelist_view(
             request, {"title": "Rezerwacje", **(extra_context or {})}
         )
+        context = getattr(response, "context_data", None)
+        if context and "cl" in context:
+            lista = context["cl"]
+            context["filtry_rezerwacji"] = [
+                {
+                    "etykieta": spec.title.capitalize(),
+                    "parametry": spec.expected_parameters(),
+                    "opcje": list(spec.choices(lista)),
+                }
+                for spec in lista.filter_specs
+            ]
+            context["parametr_szukania"] = SEARCH_VAR
+            pole = request.GET.get("pole", "")
+            context["pole_wyszukiwania"] = pole if pole in self.pola_wyszukiwania else ""
+        return response
 
     def change_view(self, request, object_id, form_url="", extra_context=None):
         return super().change_view(
