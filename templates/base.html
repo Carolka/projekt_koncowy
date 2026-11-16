@@ -17,7 +17,9 @@
                 <small>Zalogowano jako</small>
                 <strong>{% firstof user.get_full_name user.username %}</strong>
             </span>
-            {% if konto_bibliotekarki %}
+            {% if user.is_superuser and user.is_staff and user.is_active %}
+            <a class="site-nav-button" href="{% url 'admin:index' %}">Administracja</a>
+            {% elif konto_bibliotekarki %}
                 {% if user.is_staff and user.is_active %}
                     {% if perms.reservations.view_rezerwacja %}
                     <a class="site-nav-button" href="{% url 'admin:reservations_rezerwacja_changelist' %}">Rezerwacje</a>

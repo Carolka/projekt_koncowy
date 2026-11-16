@@ -170,6 +170,27 @@ class LoginViewTests(TestCase):
         )
         self.assertIn("_auth_user_id", self.client.session)
 
+    def test_superuser_lands_in_admin_and_sees_admin_button_in_catalog(self):
+        self.user.is_staff = True
+        self.user.is_superuser = True
+        self.user.save(update_fields=["is_staff", "is_superuser"])
+        self.user.groups.add(Group.objects.create(name="Bibliotekarki"))
+        katalog = reverse("catalog:book_list")
+        admin = reverse("admin:index")
+
+        response = self.client.post(
+            reverse("login"),
+            {"username": self.user.username, "password": self.haslo, "next": katalog},
+        )
+        self.assertRedirects(response, admin)
+
+        response = self.client.get(katalog)
+        self.assertContains(
+            response, f'<a class="site-nav-button" href="{admin}">Administracja</a>',
+            html=True,
+        )
+        self.assertNotContains(response, "Moje rezerwacje")
+
     def test_librarian_is_redirected_to_reservations_even_with_catalog_next(self):
         call_command("setup_roles")
         self.user.is_staff = True

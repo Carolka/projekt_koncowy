@@ -7,6 +7,9 @@ from .forms import RegistrationForm
 class LibraryLoginView(LoginView):
     def get_success_url(self):
         user = self.request.user
+        if user.is_staff and user.is_superuser:
+            return reverse("admin:index")
+
         if user.is_staff and user.groups.filter(name="Bibliotekarki").exists():
             if user.has_perm("reservations.view_rezerwacja"):
                 return reverse("admin:reservations_rezerwacja_changelist")
