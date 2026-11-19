@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from faker import Faker
@@ -9,6 +11,7 @@ from pathlib import Path
 from django.core.files import File
 from django.core.files.base import ContentFile
 from django.utils.text import slugify
+from django.utils import timezone
 from PIL import Image, ImageDraw, ImageFont
 
 from hashlib import sha256
@@ -230,6 +233,7 @@ class Command(BaseCommand):
 
         if liczba_ksiazek > 0 and liczba_uzytkownikow > 0:
             self.utworz_rezerwacje_demo()
+            self.utworz_pozostale_rezerwacje_demo(liczba_ksiazek)
 
     def utworz_konta_demo(self, liczba_uzytkownikow):
         User = get_user_model()
@@ -309,6 +313,76 @@ class Command(BaseCommand):
             self.stdout.write(f"Pominięto rezerwację pokazową: {blad}")
         else:
             self.stdout.write(f"Dodano rezerwację pokazową #{rezerwacja.pk}.")
+
+    def utworz_pozostale_rezerwacje_demo(self, liczba_ksiazek):
+        czytelnik = get_user_model().objects.get(username="demo_czytelnik_001")
+        teraz = timezone.now()
+        status = Rezerwacja.Status
+        scenariusze = [
+            (status.ODEBRANA, 2, "odebrana"),
+            (status.ODEBRANA, 17, "po terminie zwrotu"),
+            (status.ZAKONCZONA, 7, "zwrócona"),
+            (status.ANULOWANA, 3, "anulowana"),
+            (status.WYGASLA, 4, "wygasła"),
+        ]
+
+        for numer, (stan, dni_temu, etykieta) in enumerate(scenariusze, start=2):
+            if numer > liczba_ksiazek:
+                break
+
+            numer_inwentarzowy = f"DEMO-KS-{numer:03d}"
+            ksiazka_id = Egzemplarz.objects.values_list("ksiazka_id", flat=True).get(
+                numer_inwentarzowy=numer_inwentarzowy,
+            )
+
+            with transaction.atomic():
+                ksiazka = Ksiazka.objects.select_for_update().get(pk=ksiazka_id)
+                if Rezerwacja.objects.filter(
+                    uzytkownik=czytelnik, egzemplarz__ksiazka=ksiazka,
+                ).exists():
+                    continue
+
+                egzemplarz = (
+                    ksiazka.egzemplarze.select_for_update()
+                    .filter(
+                        numer_inwentarzowy__regex=rf"^{numer_inwentarzowy}(-[0-9]+)?$",
+                        aktywny=True,
+                        dostepny=True,
+                    )
+                    .exclude(
+                        rezerwacje__status__in=[status.OCZEKUJACA, status.ODEBRANA],
+                    )
+                    .order_by("pk")
+                    .first()
+                )
+                if egzemplarz is None:
+                    self.stdout.write(f"Pominięto scenariusz ({etykieta}): brak wolnego egzemplarza.")
+                    continue
+
+                utworzona_at = teraz - timedelta(days=dni_temu)
+                odebrana_at = (
+                    utworzona_at + timedelta(hours=24)
+                    if stan in (status.ODEBRANA, status.ZAKONCZONA)
+                    else None
+                )
+                Rezerwacja.objects.create(
+                    uzytkownik=czytelnik,
+                    egzemplarz=egzemplarz,
+                    status=stan,
+                    utworzona_at=utworzona_at,
+                    termin_odbioru=utworzona_at + timedelta(hours=48),
+                    odebrana_at=odebrana_at,
+                    termin_zwrotu=odebrana_at + timedelta(days=14) if odebrana_at else None,
+                    anulowana_at=(
+                        utworzona_at + timedelta(hours=12) if stan == status.ANULOWANA else None
+                    ),
+                    zwrocona_at=teraz - timedelta(days=1) if stan == status.ZAKONCZONA else None,
+                )
+                if stan == status.ODEBRANA:
+                    egzemplarz.dostepny = False
+                    egzemplarz.save(update_fields=["dostepny"])
+
+            self.stdout.write(f"Dodano rezerwację pokazową: {etykieta}.")
 
     def font_okladki(self, rozmiar):
         for nazwa in (
